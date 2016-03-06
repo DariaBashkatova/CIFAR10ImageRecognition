@@ -2,7 +2,6 @@ import numpy as np
 from sklearn import cross_validation
 from sklearn.metrics import confusion_matrix, classification_report
 from ova_log import ovaLogisticRegressor
-import time
 import utils
 
 
@@ -28,43 +27,40 @@ else:  # When running ONLY on Training Data!
 
 X_train, X_val, y_train, y_val = cross_validation.train_test_split(X_train_val, y_train_val, test_size=0.2)
 
-# # Select Hyperparameters
-# print "Selecting Hyperparameters..."
-# penalties = ["l2"]
-# regularization_strengths = [25.0, 50.0, 100.0, 200.0, 400.0]
-# best_ova_log_reg = None
-# train_accuracy_of_best_ova_log_reg = -1
-# best_val_accuracy = -1
-# # penalty = "l2" and reg = 100.0 works well
-# for penalty in penalties:
-# 	for reg in regularization_strengths:
-# 		ova_log_reg = ovaLogisticRegressor(np.arange(10))
-# 		ova_log_reg.train(X_train, y_train, reg, penalty)
-#
-# 		y_train_pred = ova_log_reg.predict(X_train)
-# 		train_accuracy = np.mean(y_train_pred == y_train)
-# 		y_val_pred = ova_log_reg.predict(X_val)
-# 		val_accuracy = np.mean(y_val_pred == y_val)
-# 		print "Penalty: ", penalty, " Reg: ", reg, " Train Accuracy: ", train_accuracy, " Val Accuracy: ", val_accuracy
-#
-# 		if val_accuracy > best_val_accuracy:
-# 			best_val_accuracy = val_accuracy
-# 			train_accuracy_of_best_ova_log_reg = train_accuracy
-# 			best_ova_log_reg = ova_log_reg
-#
-# print "\nBEST OVA LOG REG HYPERPARAMETERS:"
-# print "Penalty: ", best_ova_log_reg.penalty, " Reg: ", best_ova_log_reg.reg,\
-# 	" Train Accuracy: ", train_accuracy_of_best_ova_log_reg, " Val Accuracy: ", best_val_accuracy
+# Select Hyperparameters
+print "Selecting Hyperparameters..."
+penalties = ["l2"]  # "l1" is VERY slow
+regularization_strengths = [50.0, 100.0, 200.0]  # 100.0 is best
+best_ova_log_reg = None
+train_accuracy_of_best_ova_log_reg = -1
+best_val_accuracy = -1
+
+for penalty in penalties:
+	for reg in regularization_strengths:
+		ova_log_reg = ovaLogisticRegressor(np.arange(10))
+		ova_log_reg.train(X_train, y_train, reg, penalty)
+
+		y_train_pred = ova_log_reg.predict(X_train)
+		train_accuracy = np.mean(y_train_pred == y_train)
+		y_val_pred = ova_log_reg.predict(X_val)
+		val_accuracy = np.mean(y_val_pred == y_val)
+		print "Penalty: ", penalty, " Reg: ", reg, " Train Accuracy: ", train_accuracy, " Val Accuracy: ", val_accuracy
+
+		if val_accuracy > best_val_accuracy:
+			best_val_accuracy = val_accuracy
+			train_accuracy_of_best_ova_log_reg = train_accuracy
+			best_ova_log_reg = ova_log_reg
+
+print "\nBEST OVA LOG REG HYPERPARAMETERS:"
+print "Penalty: ", best_ova_log_reg.penalty, " Reg: ", best_ova_log_reg.reg,\
+	" Train Accuracy: ", train_accuracy_of_best_ova_log_reg, " Val Accuracy: ", best_val_accuracy
 
 
 # With ascertained optimal hyperparameters, train new model on Training and Validation Sets
 print "Training Final Model..."
-tic = time.time()
 best_ova_log_reg_final = ovaLogisticRegressor(np.arange(10))
-# best_ova_log_reg_final.train(X_train_val, y_train_val, best_ova_log_reg.reg, best_ova_log_reg.penalty)
-best_ova_log_reg_final.train(X_train_val, y_train_val, 100.0, "l2")
-toc = time.time()
-print "Training Model Time: ", toc - tic
+best_ova_log_reg_final.train(X_train_val, y_train_val, best_ova_log_reg.reg, best_ova_log_reg.penalty)
+
 
 # Make and store predictions!
 print "Making Final Predictions..."
