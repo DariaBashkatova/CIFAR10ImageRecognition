@@ -30,7 +30,7 @@ X_train, X_val, y_train, y_val = cross_validation.train_test_split(X_train_val, 
 # Select Hyperparameters
 print "Selecting Hyperparameters..."
 penalties = ["l2"]  # "l1" is VERY slow
-regularization_strengths = [50.0, 100.0, 200.0]  # 100.0 is best
+regularization_strengths = [75.0, 100.0, 125.0, 150.0, 175.0, 200.0]  # 100.0 is best
 best_ova_log_reg = None
 train_accuracy_of_best_ova_log_reg = -1
 best_val_accuracy = -1
@@ -60,7 +60,6 @@ print "Penalty: ", best_ova_log_reg.penalty, " Reg: ", best_ova_log_reg.reg,\
 print "Training Final Model..."
 best_ova_log_reg_final = ovaLogisticRegressor(np.arange(10))
 best_ova_log_reg_final.train(X_train_val, y_train_val, best_ova_log_reg.reg, best_ova_log_reg.penalty)
-
 
 # Make and store predictions!
 print "Making Final Predictions..."

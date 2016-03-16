@@ -30,10 +30,11 @@ class ovaLogisticRegressor:
 			one_vs_all_labels = np.vectorize(lambda x: 1 if x == self.labels[i] else 0)(y)
 			if penalty == "l2":
 				lreg = linear_model.LogisticRegression(
-						penalty=penalty, C=1.0/reg, solver='sag', fit_intercept=False)  # Before used lbfgs
+						penalty=penalty, C=1.0/reg, solver='sag',
+						fit_intercept=False)  # 'sag' instead of 'lbfgs' since it's faster on large datasets
 			else:
 				lreg = linear_model.LogisticRegression(
-						penalty=penalty, C=1.0/reg, solver='liblinear', fit_intercept=False, max_iter=10)
+						penalty=penalty, C=1.0/reg, solver='liblinear', fit_intercept=False, max_iter=10)  # Too slow!
 			lreg.fit(X,one_vs_all_labels)
 			theta_opt[i] = lreg.coef_
 
