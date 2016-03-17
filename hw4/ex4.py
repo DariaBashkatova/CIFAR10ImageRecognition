@@ -162,8 +162,11 @@ plt.savefig('fig5.pdf')
 Cvals = [0.01,0.03,0.1,0.3,1,3,10,30]
 sigma_vals = [0.01,0.03,0.1,0.3,1,3,10,30]
 
-best_C = 0.01
-best_sigma = 0.01
+# Best Accuracy: 95.5%
+# Sigma = 0.1, C = 0.3, 1, 3, 10
+# Sigma = 0.3, C = 30
+best_sigma = 0.1
+best_C = 0.3
 
 ############################################################################
 # TODO                                                                     #
@@ -177,39 +180,39 @@ best_sigma = 0.01
 # your code should determine best_C and best_sigma                         #
 ############################################################################
 
-print "Selecting Hyperparameters..."
-
-best_accuracy = -1.0
-poly = preprocessing.PolynomialFeatures(1)
-
-for C in Cvals:
-	for sigma in sigma_vals:
-		# Preprocess train data (Kernelize, scale, and add intercept)
-		K = np.array([utils.gaussian_kernel(x1,x2,sigma) for x1 in X for x2 in X]).reshape(X.shape[0],X.shape[0])
-		scaler = preprocessing.StandardScaler().fit(K)
-		scaleK = scaler.transform(K)
-		# KK = np.vstack([np.ones((scaleK.shape[0],)),scaleK]).T
-		KK = poly.fit_transform(scaleK)
-
-		# Preprocess val data (Kernelize, scale, and add intercept)
-		Kval = np.array([utils.gaussian_kernel(x1,x2,sigma) for x1 in Xval for x2 in X]).reshape(Xval.shape[0],X.shape[0])
-		scaleKval = scaler.transform(Kval)
-		KKval = poly.fit_transform(scaleKval)
-
-		# Train model and get val accuracy
-		svm = LinearSVM_twoclass()
-		svm.theta = np.zeros((KK.shape[1],))
-		svm.train(KK,yy,learning_rate=1e-4,C=C,num_iters=20000)
-		yyval_pred = svm.predict(KKval)
-		accuracy = np.mean(yyval == yyval_pred)
-
-		print "C:", C, " Sigma:", sigma, " Accuracy:", accuracy
-		if accuracy > best_accuracy:
-			accuracy = best_accuracy
-			best_C = C
-			best_sigma = sigma
-
-print "Best C:", best_C, " Best Sigma:", best_sigma, " Best Accuracy:", best_accuracy
+# print "Selecting Hyperparameters..."
+#
+# best_accuracy = -1.0
+# poly = preprocessing.PolynomialFeatures(1)
+#
+# for C in Cvals:
+# 	for sigma in sigma_vals:
+# 		# Preprocess train data (Kernelize, scale, and add intercept)
+# 		K = np.array([utils.gaussian_kernel(x1,x2,sigma) for x1 in X for x2 in X]).reshape(X.shape[0],X.shape[0])
+# 		scaler = preprocessing.StandardScaler().fit(K)
+# 		scaleK = scaler.transform(K)
+# 		# KK = np.vstack([np.ones((scaleK.shape[0],)),scaleK]).T
+# 		KK = poly.fit_transform(scaleK)
+#
+# 		# Preprocess val data (Kernelize, scale, and add intercept)
+# 		Kval = np.array([utils.gaussian_kernel(x1,x2,sigma) for x1 in Xval for x2 in X]).reshape(Xval.shape[0],X.shape[0])
+# 		scaleKval = scaler.transform(Kval)
+# 		KKval = poly.fit_transform(scaleKval)
+#
+# 		# Train model and get val accuracy
+# 		svm = LinearSVM_twoclass()
+# 		svm.theta = np.zeros((KK.shape[1],))
+# 		svm.train(KK,yy,learning_rate=1e-4,C=C,num_iters=20000)
+# 		yyval_pred = svm.predict(KKval)
+# 		accuracy = np.mean(yyval == yyval_pred)
+#
+# 		print "C:", C, " Sigma:", sigma, " Accuracy:", accuracy
+# 		if accuracy > best_accuracy:
+# 			accuracy = best_accuracy
+# 			best_C = C
+# 			best_sigma = sigma
+#
+# print "Best C:", best_C, " Best Sigma:", best_sigma, " Best Accuracy:", best_accuracy
 
 ############################################################################
 #   end of your code                                                       #
