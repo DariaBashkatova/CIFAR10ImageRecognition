@@ -126,12 +126,12 @@ yy[y == 0] = -1
 svm = LinearSVM_twoclass()
 svm.theta = np.zeros((KK.shape[1],))
 C = 1
-svm.train(KK,yy,learning_rate=1e-4,C=C,num_iters=20000,verbose=True)
-
-# visualize the boundary
-
-utils.plot_decision_kernel_boundary(X,y,scaler,sigma,svm,'','',['neg','pos'])
-plt.savefig("fig4.pdf")
+# svm.train(KK,yy,learning_rate=1e-4,C=C,num_iters=20000,verbose=True)
+#
+# # visualize the boundary
+#
+# utils.plot_decision_kernel_boundary(X,y,scaler,sigma,svm,'','',['neg','pos'])
+# plt.savefig("fig4.pdf")
 
 ############################################################################
 #  Part  4: Training SVM with a kernel                                     #
@@ -177,6 +177,39 @@ best_sigma = 0.01
 # your code should determine best_C and best_sigma                         #
 ############################################################################
 
+print "Selecting Hyperparameters..."
+
+best_accuracy = -1.0
+poly = preprocessing.PolynomialFeatures(1)
+
+for C in Cvals:
+	for sigma in sigma_vals:
+		# Preprocess train data (Kernelize, scale, and add intercept)
+		K = np.array([utils.gaussian_kernel(x1,x2,sigma) for x1 in X for x2 in X]).reshape(X.shape[0],X.shape[0])
+		scaler = preprocessing.StandardScaler().fit(K)
+		scaleK = scaler.transform(K)
+		# KK = np.vstack([np.ones((scaleK.shape[0],)),scaleK]).T
+		KK = poly.fit_transform(scaleK)
+
+		# Preprocess val data (Kernelize, scale, and add intercept)
+		Kval = np.array([utils.gaussian_kernel(x1,x2,sigma) for x1 in Xval for x2 in X]).reshape(Xval.shape[0],X.shape[0])
+		scaleKval = scaler.transform(Kval)
+		KKval = poly.fit_transform(scaleKval)
+
+		# Train model and get val accuracy
+		svm = LinearSVM_twoclass()
+		svm.theta = np.zeros((KK.shape[1],))
+		svm.train(KK,yy,learning_rate=1e-4,C=C,num_iters=20000)
+		yyval_pred = svm.predict(KKval)
+		accuracy = np.mean(yyval == yyval_pred)
+
+		print "C:", C, " Sigma:", sigma, " Accuracy:", accuracy
+		if accuracy > best_accuracy:
+			accuracy = best_accuracy
+			best_C = C
+			best_sigma = sigma
+
+print "Best C:", best_C, " Best Sigma:", best_sigma, " Best Accuracy:", best_accuracy
 
 ############################################################################
 #   end of your code                                                       #
