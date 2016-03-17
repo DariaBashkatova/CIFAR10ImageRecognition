@@ -1,5 +1,6 @@
 import scipy.io
 import numpy as np
+import math
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn import preprocessing
@@ -17,6 +18,8 @@ def gaussian_kernel(x1,x2,sigma):
     # 1 line of code expected                                             #
     #######################################################################
 
+    dif = x1 - x2
+    k = math.e ** (np.dot(dif, dif) / (-2.0 * (sigma ** 2)))
 
     #######################################################################
     #  end of code                                                        #
