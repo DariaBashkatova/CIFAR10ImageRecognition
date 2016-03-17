@@ -13,7 +13,7 @@ def svm_loss_twoclass(theta, X, y, C):
   Returns a tuple of:
   - loss as single float
   - gradient with respect to theta; an array of same shape as theta
-"""
+  """
 
   m, d = X.shape
   grad = np.zeros(theta.shape)
@@ -25,6 +25,10 @@ def svm_loss_twoclass(theta, X, y, C):
   # 2-3 lines of code expected                                         #
   ######################################################################
 
+  signed_predictions = np.multiply(y, np.dot(X, theta))  # Did h correctly?
+  J_unreg = (C / (1.0 * m)) * np.sum(np.maximum(np.zeros(m), 1 - signed_predictions))
+  J = J_unreg + np.dot(theta.T, theta) / (2.0 * m)  # Adds in regularization
+  np.vectorize(lambda x: 1 if x > 0 else 0)(signed_predictions)
 
   ######################################################################
   # end of your code                                                   #
