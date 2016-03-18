@@ -9,14 +9,18 @@ from linear_classifier import LinearSVM_twoclass
 # load the SPAM email training and test dataset                             #
 #############################################################################
 
+poly = preprocessing.PolynomialFeatures(1)
 X,y = utils.load_mat('data/spamTrain.mat')
+XX = poly.fit_transform(X)
 yy = np.ones(y.shape)
 yy[y==0] = -1
 
-
 test_data = scipy.io.loadmat('data/spamTest.mat')
 X_test = test_data['Xtest']
+XX_test = poly.fit_transform(X_test)
 y_test = test_data['ytest'].flatten()
+yy_test = np.ones(y_test.shape)
+yy_test[y_test==0] = -1
 
 #############################################################################
 # your code for setting up the best SVM classifier for this dataset         #
@@ -33,40 +37,59 @@ svm = LinearSVM_twoclass()
 
 print "Selecting Hyperparameters..."
 X_train, X_val, y_train, y_val = cross_validation.train_test_split(X, yy, test_size=0.2)
-poly = preprocessing.PolynomialFeatures(1)
+XX_train = poly.fit_transform(X_train)
+XX_val = poly.fit_transform(X_val)
 
-# Cvals = [0.01,0.03,0.1,0.3,1,3,10,30]
-# sigma_vals = [0.01,0.03,0.1,0.3,1,3,10,30]
-Cvals = [0.1,1,10]
-sigma_vals = [0.1,1,10]
-learning_rates = [1e-4]
-num_iters_list = [10000]
 
+# Some somewhat arbitrary initializations
 best_accuracy = -1.0
 best_C = 1
-best_sigma = .1
-best_learning_rate = 1e-4
-best_num_iters = 1000
-kernel = None
-# kernel = utils.gaussian_kernel
-# kernel = utils.polynomial_kernel
+best_kernel_param = 10
+best_lr = 1e0
+best_num_iters = 100
+
+
+kernel = "polynomial"
+
+if kernel == "gaussian":
+	kernel = utils.gaussian_kernel
+	kernel_param_vals = [1, 3, 10, 30]  # For sigma
+	Cvals = [.1, 1, 10]
+	learning_rates = [3e-1, 1e0, 3e0]
+	num_iters_list = [100]
+
+elif kernel == "polynomial":
+	kernel = utils.polynomial_kernel
+	kernel_param_vals = [-10, -1, 0, 1, 10]  # For c
+	Cvals = [.1, 1, 10]
+	learning_rates = [1e1, 1e0, 1e-1, 1e-2]
+	num_iters_list = [100]
+
+else:
+	kernel = None
+	kernel_param_vals = [None]
+	Cvals = [1, 3, 10]
+	learning_rates = [3e0, 1e0, 3e-1]
+	num_iters_list = [30, 100, 300]
+
+
 print "KERNEL: ", kernel
 
-for C in Cvals:
-	for sigma in sigma_vals:
-		for learning_rate in learning_rates:
+for kernel_param in kernel_param_vals:
+	for C in Cvals:
+		for lr in learning_rates:
 			for num_iters in num_iters_list:
-				if kernel != None:
+				if kernel is not None:
 					# Preprocess train data (Kernelize, scale, and add intercept)
 					print "."
-					K = np.array([kernel(x1,x2,sigma) for x1 in X_train for x2 in X_train]).reshape(X_train.shape[0],X_train.shape[0])
+					K = np.array([kernel(x1,x2,kernel_param) for x1 in X_train for x2 in X_train]).reshape(X_train.shape[0],X_train.shape[0])
 					scaler = preprocessing.StandardScaler().fit(K)
 					scale_K = scaler.transform(K)
 					KK = poly.fit_transform(scale_K)
 
 					# Preprocess val data (Kernelize, scale, and add intercept)
 					print "."
-					K_val = np.array([kernel(x1,x2,sigma) for x1 in X_val for x2 in X_train]).reshape(X_val.shape[0],X_train.shape[0])
+					K_val = np.array([kernel(x1,x2,kernel_param) for x1 in X_val for x2 in X_train]).reshape(X_val.shape[0],X_train.shape[0])
 					scale_K_val = scaler.transform(K_val)
 					KK_val = poly.fit_transform(scale_K_val)
 
@@ -74,26 +97,28 @@ for C in Cvals:
 					print "."
 					svm = LinearSVM_twoclass()
 					svm.theta = np.zeros((KK.shape[1],))
-					svm.train(KK,y_train,learning_rate=learning_rate,C=C,num_iters=num_iters)
+					svm.train(KK,y_train,learning_rate=lr,C=C,num_iters=num_iters)
 					y_val_pred = svm.predict(KK_val)
 					accuracy = np.mean(y_val == y_val_pred)
 
 				else:
-					XX_train = poly.fit_transform(X_train)
-					XX_val = poly.fit_transform(X_val)
-					svm.train(XX_train,y_train,learning_rate=learning_rate,C=C,num_iters=num_iters)
+					svm = LinearSVM_twoclass()
+					svm.train(XX_train,y_train,learning_rate=lr,C=C,num_iters=num_iters,verbose=True)
 					y_val_pred = svm.predict(XX_val)
 					accuracy = np.mean(y_val == y_val_pred)
 
-				print "LR:", learning_rate, " NumIters:", num_iters, " C:", C, " Sigma:", sigma, " Accuracy:", accuracy
+				print "LR:", lr, " NumIters:", num_iters, " C:", C, " KP:", kernel_param, " Accuracy:", accuracy
 				if accuracy > best_accuracy:
 					best_accuracy = accuracy
 					best_C = C
-					best_sigma = sigma
-					best_learning_rate = learning_rate
+					best_kernel_param = kernel_param
+					best_lr = lr
 					best_num_iters = num_iters
 
-print "Best LR:", learning_rate, " Best NumIters:", num_iters, " Best C:", best_C, " Best Sigma:", best_sigma, " Best Accuracy:", best_accuracy
+print "Best LR:", best_lr, " Best NumIters:", best_num_iters, " Best C:", best_C, " BestKP:", kernel_param, " Best Accuracy:", best_accuracy
+
+svm.train(XX,y,learning_rate=best_lr,C=best_C,num_iters=best_num_iters)
+
 
 #############################################################################
 #  end of your code                                                         #
@@ -104,7 +129,7 @@ print "Best LR:", learning_rate, " Best NumIters:", num_iters, " Best C:", best_
 #############################################################################
 # 2 lines of code expected
 
-y_pred = svm.predict(X)
+y_pred = svm.predict(XX)
 print "Accuracy of model on training data is: ", metrics.accuracy_score(yy,y_pred)
 
 
@@ -114,9 +139,8 @@ print "Accuracy of model on training data is: ", metrics.accuracy_score(yy,y_pre
 # 2 lines of code expected
 
 
-yy_test = np.ones(y_test.shape)
-yy_test[y_test==0] = -1
-test_pred = svm.predict(X_test)
+
+test_pred = svm.predict(XX_test)
 print "Accuracy of model on test data is: ", metrics.accuracy_score(yy_test,test_pred)
 
 
