@@ -57,7 +57,7 @@ yy[y == 0] = -1
 # You will change this line to vary C.                                     #
 ############################################################################
 
-C = 1
+C = 100
 
 ############################################################################
 
@@ -74,7 +74,13 @@ print "Accuracy on training data = ", metrics.accuracy_score(yy,y_pred)
 # visualize the decision boundary
 
 utils.plot_decision_boundary(scaleX,y,svm,'x1','x2',['neg','pos'])
-plt.savefig('fig2.pdf')
+
+if C == 1:
+	plt.savefig('fig2.pdf')
+elif C == 100:
+	plt.savefig('fig2_C=100.pdf')
+elif C == 10000:
+	plt.savefig('fig2_C=10000.pdf')
 
 ############################################################################
 #  Part  3: Training SVM with a kernel                                     #
@@ -126,12 +132,12 @@ yy[y == 0] = -1
 svm = LinearSVM_twoclass()
 svm.theta = np.zeros((KK.shape[1],))
 C = 1
-# svm.train(KK,yy,learning_rate=1e-4,C=C,num_iters=20000,verbose=True)
-#
-# # visualize the boundary
-#
-# utils.plot_decision_kernel_boundary(X,y,scaler,sigma,svm,'','',['neg','pos'])
-# plt.savefig("fig4.pdf")
+svm.train(KK,yy,learning_rate=1e-4,C=C,num_iters=20000,verbose=True)
+
+# visualize the boundary
+
+utils.plot_decision_kernel_boundary(X,y,scaler,sigma,svm,'','',['neg','pos'])
+plt.savefig("fig4.pdf")
 
 ############################################################################
 #  Part  4: Training SVM with a kernel                                     #
@@ -163,8 +169,7 @@ Cvals = [0.01,0.03,0.1,0.3,1,3,10,30]
 sigma_vals = [0.01,0.03,0.1,0.3,1,3,10,30]
 
 # Best Accuracy: 95.5%
-# Sigma = 0.1, C = 0.3, 1, 3, 10
-# Sigma = 0.3, C = 30
+# Sigma = 0.1, C = 0.3, 1
 best_sigma = 0.1
 best_C = 0.3
 
@@ -180,39 +185,39 @@ best_C = 0.3
 # your code should determine best_C and best_sigma                         #
 ############################################################################
 
-# print "Selecting Hyperparameters..."
-#
-# best_accuracy = -1.0
-# poly = preprocessing.PolynomialFeatures(1)
-#
-# for C in Cvals:
-# 	for sigma in sigma_vals:
-# 		# Preprocess train data (Kernelize, scale, and add intercept)
-# 		K = np.array([utils.gaussian_kernel(x1,x2,sigma) for x1 in X for x2 in X]).reshape(X.shape[0],X.shape[0])
-# 		scaler = preprocessing.StandardScaler().fit(K)
-# 		scaleK = scaler.transform(K)
-# 		# KK = np.vstack([np.ones((scaleK.shape[0],)),scaleK]).T
-# 		KK = poly.fit_transform(scaleK)
-#
-# 		# Preprocess val data (Kernelize, scale, and add intercept)
-# 		Kval = np.array([utils.gaussian_kernel(x1,x2,sigma) for x1 in Xval for x2 in X]).reshape(Xval.shape[0],X.shape[0])
-# 		scaleKval = scaler.transform(Kval)
-# 		KKval = poly.fit_transform(scaleKval)
-#
-# 		# Train model and get val accuracy
-# 		svm = LinearSVM_twoclass()
-# 		svm.theta = np.zeros((KK.shape[1],))
-# 		svm.train(KK,yy,learning_rate=1e-4,C=C,num_iters=20000)
-# 		yyval_pred = svm.predict(KKval)
-# 		accuracy = np.mean(yyval == yyval_pred)
-#
-# 		print "C:", C, " Sigma:", sigma, " Accuracy:", accuracy
-# 		if accuracy > best_accuracy:
-# 			accuracy = best_accuracy
-# 			best_C = C
-# 			best_sigma = sigma
-#
-# print "Best C:", best_C, " Best Sigma:", best_sigma, " Best Accuracy:", best_accuracy
+print "Selecting Hyperparameters..."
+
+best_accuracy = -1.0
+poly = preprocessing.PolynomialFeatures(1)
+
+for C in Cvals:
+	for sigma in sigma_vals:
+		# Preprocess train data (Kernelize, scale, and add intercept)
+		K = np.array([utils.gaussian_kernel(x1,x2,sigma) for x1 in X for x2 in X]).reshape(X.shape[0],X.shape[0])
+		scaler = preprocessing.StandardScaler().fit(K)
+		scaleK = scaler.transform(K)
+		# KK = np.vstack([np.ones((scaleK.shape[0],)),scaleK]).T
+		KK = poly.fit_transform(scaleK)
+
+		# Preprocess val data (Kernelize, scale, and add intercept)
+		Kval = np.array([utils.gaussian_kernel(x1,x2,sigma) for x1 in Xval for x2 in X]).reshape(Xval.shape[0],X.shape[0])
+		scaleKval = scaler.transform(Kval)
+		KKval = poly.fit_transform(scaleKval)
+
+		# Train model and get val accuracy
+		svm = LinearSVM_twoclass()
+		svm.theta = np.zeros((KK.shape[1],))
+		svm.train(KK,yy,learning_rate=1e-4,C=C,num_iters=20000)
+		yyval_pred = svm.predict(KKval)
+		accuracy = np.mean(yyval == yyval_pred)
+
+		print "C:", C, " Sigma:", sigma, " Accuracy:", accuracy
+		if accuracy > best_accuracy:
+			best_accuracy = accuracy
+			best_C = C
+			best_sigma = sigma
+
+print "Best C:", best_C, " Best Sigma:", best_sigma, " Best Accuracy:", best_accuracy
 
 ############################################################################
 #   end of your code                                                       #

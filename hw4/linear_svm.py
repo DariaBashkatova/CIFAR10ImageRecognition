@@ -28,9 +28,15 @@ def svm_loss_twoclass(theta, X, y, C):
   signed_preds = np.multiply(y, np.dot(X, theta))  # Did h correctly?
   J_unreg = (C / (1.0 * m)) * np.sum(np.maximum(np.zeros(m), 1 - signed_preds))
   J = J_unreg + np.dot(theta.T, theta) / (2.0 * m)  # Adds in regularization
-  grad = np.copy(theta)
+
+  grad = np.copy(theta) / (1.0 * m)
+
+  # Vectorized
   update_indicator = np.vectorize(lambda x: 1 if x < 1 else 0)(signed_preds)
-  grad -= (C / (1.0 * m)) * np.sum(np.multiply(update_indicator, np.multiply(y, X.T)).T, axis=0)
+
+  grad -= (C / (1.0 * m)) * np.dot(X.T, np.multiply(update_indicator, y))
+
+  # grad -= (C / (1.0 * m)) * np.sum(np.multiply(update_indicator, np.multiply(y, X.T)).T, axis=0)
 
   # Unvectorized
   # for i in range(m):
