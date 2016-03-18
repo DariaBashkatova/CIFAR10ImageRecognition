@@ -13,6 +13,7 @@ X,y = utils.load_mat('data/spamTrain.mat')
 yy = np.ones(y.shape)
 yy[y==0] = -1
 
+
 test_data = scipy.io.loadmat('data/spamTest.mat')
 X_test = test_data['Xtest']
 y_test = test_data['ytest'].flatten()
@@ -24,17 +25,20 @@ y_test = test_data['ytest'].flatten()
 # What should num_iters be? Should X be scaled? Should X be kernelized?     #
 #############################################################################
 # your experiments below
+
 # C = 1
 svm = LinearSVM_twoclass()
-svm.theta = np.zeros((X.shape[1],))
+# svm.theta = np.zeros((X.shape[1],))
 # svm.train(X,yy,learning_rate=1e-2,C=C,num_iters=2000,verbose=True)
 
-X_train, y_train, X_val, y_val = cross_validation.train_test_split(X, yy, test_size=0.2)
-
 print "Selecting Hyperparameters..."
+X_train, X_val, y_train, y_val = cross_validation.train_test_split(X, yy, test_size=0.2)
 poly = preprocessing.PolynomialFeatures(1)
-Cvals = [0.01,0.03,0.1,0.3,1,3,10,30]
-sigma_vals = [0.01,0.03,0.1,0.3,1,3,10,30]
+
+# Cvals = [0.01,0.03,0.1,0.3,1,3,10,30]
+# sigma_vals = [0.01,0.03,0.1,0.3,1,3,10,30]
+Cvals = [0.1,1,10]
+sigma_vals = [0.1,1,10]
 learning_rates = [1e-4]
 num_iters_list = [10000]
 
@@ -42,33 +46,44 @@ best_accuracy = -1.0
 best_C = 1
 best_sigma = .1
 best_learning_rate = 1e-4
-best_num_iters = 100
-
+best_num_iters = 1000
+kernel = None
+# kernel = utils.gaussian_kernel
+# kernel = utils.polynomial_kernel
+print "KERNEL: ", kernel
 
 for C in Cvals:
 	for sigma in sigma_vals:
 		for learning_rate in learning_rates:
 			for num_iters in num_iters_list:
-				# Preprocess train data (Kernelize, scale, and add intercept)
-				print "Making K"
-				K = np.array([utils.gaussian_kernel(x1,x2,sigma) for x1 in X_train for x2 in X_train]).reshape(X_train.shape[0],X_train.shape[0])
-				scaler = preprocessing.StandardScaler().fit(K)
-				scale_K = scaler.transform(K)
-				# KK = np.vstack([np.ones((scaleK.shape[0],)),scaleK]).T
-				KK = poly.fit_transform(scale_K)
+				if kernel != None:
+					# Preprocess train data (Kernelize, scale, and add intercept)
+					print "."
+					K = np.array([kernel(x1,x2,sigma) for x1 in X_train for x2 in X_train]).reshape(X_train.shape[0],X_train.shape[0])
+					scaler = preprocessing.StandardScaler().fit(K)
+					scale_K = scaler.transform(K)
+					KK = poly.fit_transform(scale_K)
 
-				# Preprocess val data (Kernelize, scale, and add intercept)
-				print "Making K_val"
-				K_val = np.array([utils.gaussian_kernel(x1,x2,sigma) for x1 in X_val for x2 in X_train]).reshape(X_val.shape[0],X_train.shape[0])
-				scale_K_val = scaler.transform(K_val)
-				KK_val = poly.fit_transform(scale_K_val)
+					# Preprocess val data (Kernelize, scale, and add intercept)
+					print "."
+					K_val = np.array([kernel(x1,x2,sigma) for x1 in X_val for x2 in X_train]).reshape(X_val.shape[0],X_train.shape[0])
+					scale_K_val = scaler.transform(K_val)
+					KK_val = poly.fit_transform(scale_K_val)
 
-				# Train model and get val accuracy
-				svm = LinearSVM_twoclass()
-				svm.theta = np.zeros((KK.shape[1],))
-				svm.train(KK,yy,learning_rate=learning_rate,C=C,num_iters=num_iters)
-				y_val_pred = svm.predict(KK_val)
-				accuracy = np.mean(y_val == y_val_pred)
+					# Train model and get val accuracy
+					print "."
+					svm = LinearSVM_twoclass()
+					svm.theta = np.zeros((KK.shape[1],))
+					svm.train(KK,y_train,learning_rate=learning_rate,C=C,num_iters=num_iters)
+					y_val_pred = svm.predict(KK_val)
+					accuracy = np.mean(y_val == y_val_pred)
+
+				else:
+					XX_train = poly.fit_transform(X_train)
+					XX_val = poly.fit_transform(X_val)
+					svm.train(XX_train,y_train,learning_rate=learning_rate,C=C,num_iters=num_iters)
+					y_val_pred = svm.predict(XX_val)
+					accuracy = np.mean(y_val == y_val_pred)
 
 				print "LR:", learning_rate, " NumIters:", num_iters, " C:", C, " Sigma:", sigma, " Accuracy:", accuracy
 				if accuracy > best_accuracy:

@@ -33,10 +33,7 @@ def svm_loss_twoclass(theta, X, y, C):
 
   # Vectorized
   update_indicator = np.vectorize(lambda x: 1 if x < 1 else 0)(signed_preds)
-
   grad -= (C / (1.0 * m)) * np.dot(X.T, np.multiply(update_indicator, y))
-
-  # grad -= (C / (1.0 * m)) * np.sum(np.multiply(update_indicator, np.multiply(y, X.T)).T, axis=0)
 
   # Unvectorized
   # for i in range(m):

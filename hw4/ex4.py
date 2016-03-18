@@ -168,7 +168,7 @@ plt.savefig('fig5.pdf')
 Cvals = [0.01,0.03,0.1,0.3,1,3,10,30]
 sigma_vals = [0.01,0.03,0.1,0.3,1,3,10,30]
 
-# Best Accuracy: 95.5%
+# Best Accuracy: 96%
 # Sigma = 0.1, C = 0.3, 1
 best_sigma = 0.1
 best_C = 0.3

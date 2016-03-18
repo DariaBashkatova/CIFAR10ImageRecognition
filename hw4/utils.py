@@ -28,6 +28,10 @@ def gaussian_kernel(x1,x2,sigma):
     return k
 
 
+def polynomial_kernel(x1,x2,c,d):
+    return (x1.dot(x2) + c) ** d
+
+
 ##########################################################################
 # Utilities for loading mat files                                        #
 ##########################################################################
