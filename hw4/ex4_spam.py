@@ -49,7 +49,7 @@ best_lr = 1e0
 best_num_iters = 100
 
 
-kernel_type = "polynomial"
+kernel_type = None
 
 if kernel_type == "gaussian":
 	kernel = utils.gaussian_kernel
@@ -71,8 +71,11 @@ elif kernel_type == "polynomial":
 else:
 	kernel = None
 	kernel_param_vals = [None]
-	Cvals = [1, 3, 10]
-	learning_rates = [3e0, 1e0, 3e-1]
+	# Cvals = [1, 3, 10]
+	# learning_rates = [3e0, 1e0, 3e-1]
+	# num_iters_list = [30, 100, 300]
+	Cvals = [.001, .003, .01, .03, .1, .3, 1, 3, 10, 30, 100, 300, 1000]
+	learning_rates = [1e1, 3e0, 1e0, 3e-1, 1e-2]
 	num_iters_list = [30, 100, 300]
 
 

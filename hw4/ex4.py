@@ -79,8 +79,7 @@ if C == 1:
 	plt.savefig('fig2.pdf')
 elif C == 100:
 	plt.savefig('fig2_C=100.pdf')
-elif C == 10000:
-	plt.savefig('fig2_C=10000.pdf')
+
 
 ############################################################################
 #  Part  3: Training SVM with a kernel                                     #
