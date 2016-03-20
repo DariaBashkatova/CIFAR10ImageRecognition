@@ -28,7 +28,7 @@ def gaussian_kernel(x1,x2,sigma):
     return k
 
 
-def polynomial_kernel(x1,x2,c,d=2):
+def polynomial_kernel(x1,x2,c,d=1):
     return (x1.dot(x2) + c) ** d
 
 

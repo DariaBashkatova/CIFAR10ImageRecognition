@@ -44,25 +44,28 @@ XX_val = poly.fit_transform(X_val)
 # Some somewhat arbitrary initializations
 best_accuracy = -1.0
 best_C = 1
-best_kernel_param = 10
+best_kernel_param = -10
 best_lr = 1e0
 best_num_iters = 100
 
 
-kernel = "polynomial"
+kernel_type = "polynomial"
 
-if kernel == "gaussian":
+if kernel_type == "gaussian":
 	kernel = utils.gaussian_kernel
 	kernel_param_vals = [1, 3, 10, 30]  # For sigma
 	Cvals = [.1, 1, 10]
 	learning_rates = [3e-1, 1e0, 3e0]
 	num_iters_list = [100]
 
-elif kernel == "polynomial":
+elif kernel_type == "polynomial":
 	kernel = utils.polynomial_kernel
-	kernel_param_vals = [-10, -1, 0, 1, 10]  # For c
-	Cvals = [.1, 1, 10]
-	learning_rates = [1e1, 1e0, 1e-1, 1e-2]
+	# kernel_param_vals = [-10, -1, 0, 1, 10]  # For c
+	kernel_param_vals = [-10]
+	# Cvals = [.1, 1, 10]
+	Cvals = [.1]
+	# learning_rates = [1e1, 1e0, 1e-1, 1e-2]
+	learning_rates = [1e-2]
 	num_iters_list = [100]
 
 else:
@@ -81,20 +84,17 @@ for kernel_param in kernel_param_vals:
 			for num_iters in num_iters_list:
 				if kernel is not None:
 					# Preprocess train data (Kernelize, scale, and add intercept)
-					print "."
 					K = np.array([kernel(x1,x2,kernel_param) for x1 in X_train for x2 in X_train]).reshape(X_train.shape[0],X_train.shape[0])
 					scaler = preprocessing.StandardScaler().fit(K)
 					scale_K = scaler.transform(K)
 					KK = poly.fit_transform(scale_K)
 
 					# Preprocess val data (Kernelize, scale, and add intercept)
-					print "."
 					K_val = np.array([kernel(x1,x2,kernel_param) for x1 in X_val for x2 in X_train]).reshape(X_val.shape[0],X_train.shape[0])
 					scale_K_val = scaler.transform(K_val)
 					KK_val = poly.fit_transform(scale_K_val)
 
 					# Train model and get val accuracy
-					print "."
 					svm = LinearSVM_twoclass()
 					svm.theta = np.zeros((KK.shape[1],))
 					svm.train(KK,y_train,learning_rate=lr,C=C,num_iters=num_iters)
@@ -115,9 +115,8 @@ for kernel_param in kernel_param_vals:
 					best_lr = lr
 					best_num_iters = num_iters
 
-print "Best LR:", best_lr, " Best NumIters:", best_num_iters, " Best C:", best_C, " BestKP:", kernel_param, " Best Accuracy:", best_accuracy
+print "Best LR:", best_lr, " Best NumIters:", best_num_iters, " Best C:", best_C, " BestKP:", best_kernel_param, " Best Accuracy:", best_accuracy
 
-svm.train(XX,y,learning_rate=best_lr,C=best_C,num_iters=best_num_iters)
 
 
 #############################################################################
@@ -129,7 +128,18 @@ svm.train(XX,y,learning_rate=best_lr,C=best_C,num_iters=best_num_iters)
 #############################################################################
 # 2 lines of code expected
 
-y_pred = svm.predict(XX)
+if kernel_type == "gaussian" or kernel_type == "polynomial":
+	K = np.array([kernel(x1,x2,best_kernel_param) for x1 in X for x2 in X]).reshape(X.shape[0],X.shape[0])
+	scaler = preprocessing.StandardScaler().fit(K)
+	scale_K = scaler.transform(K)
+	KK = poly.fit_transform(scale_K)
+	svm.train(KK,yy,learning_rate=best_lr,C=best_C,num_iters=best_num_iters)
+	y_pred = svm.predict(KK)
+
+else:
+	svm.train(XX,y,learning_rate=best_lr,C=best_C,num_iters=best_num_iters)
+	y_pred = svm.predict(XX)
+
 print "Accuracy of model on training data is: ", metrics.accuracy_score(yy,y_pred)
 
 
@@ -138,10 +148,16 @@ print "Accuracy of model on training data is: ", metrics.accuracy_score(yy,y_pre
 #############################################################################
 # 2 lines of code expected
 
+if kernel_type == "gaussian" or kernel_type == "polynomial":
+	K_test = np.array([kernel(x1,x2,best_kernel_param) for x1 in X_test for x2 in X]).reshape(X_test.shape[0],X.shape[0])
+	scale_K_test = scaler.transform(K_test)
+	KK_test = poly.fit_transform(scale_K_test)
+	y_pred_test = svm.predict(KK_test)
 
+else:
+	y_pred_test = svm.predict(XX_test)
 
-test_pred = svm.predict(XX_test)
-print "Accuracy of model on test data is: ", metrics.accuracy_score(yy_test,test_pred)
+print "Accuracy of model on test data is: ", metrics.accuracy_score(yy_test,y_pred_test)
 
 
 #############################################################################
@@ -150,11 +166,11 @@ print "Accuracy of model on test data is: ", metrics.accuracy_score(yy_test,test
 #############################################################################
 # 4 lines of code expected
 
-words, inv_words = utils.get_vocab_dict()
-
-index = np.argsort(svm.theta)[-15:]
-print "Top 15 predictors of spam are: "
-for i in range(-1,-16,-1):
-    print words[index[i]+1]
+if kernel_type != "gaussian" and kernel_type != "polynomial":
+	words, inv_words = utils.get_vocab_dict()
+	index = np.argsort(svm.theta)[-15:]
+	print "Top 15 predictors of spam are: "
+	for i in range(-1,-16,-1):
+		print words[index[i]+1]
 
 
