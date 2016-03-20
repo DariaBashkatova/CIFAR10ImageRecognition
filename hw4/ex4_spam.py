@@ -41,13 +41,13 @@ XX_train = poly.fit_transform(X_train)
 XX_val = poly.fit_transform(X_val)
 
 
-# Some somewhat arbitrary initializations
+# Some initializations
 best_accuracy = -1.0
 best_C = 1
 best_kernel_param = -10
 best_lr = 1e0
 best_num_iters = 100
-
+best_acc_per_C = {}
 
 kernel_type = None
 
@@ -64,7 +64,7 @@ elif kernel_type == "polynomial":
 	kernel_param_vals = [-10]
 	# Cvals = [.1, 1, 10]
 	Cvals = [.1]
-	# learning_rates = [1e1, 1e0, 1e-1, 1e-2]
+	# learning_rates = [1e-2, 1e-1, 1e0, 1e1]
 	learning_rates = [1e-2]
 	num_iters_list = [100]
 
@@ -72,10 +72,10 @@ else:
 	kernel = None
 	kernel_param_vals = [None]
 	# Cvals = [1, 3, 10]
-	# learning_rates = [3e0, 1e0, 3e-1]
+	# learning_rates = [3e-1, 1e0, 3e0]
 	# num_iters_list = [30, 100, 300]
 	Cvals = [.001, .003, .01, .03, .1, .3, 1, 3, 10, 30, 100, 300, 1000]
-	learning_rates = [1e1, 3e0, 1e0, 3e-1, 1e-2]
+	learning_rates = [1e-2, 3e-2, 1e-1, 3e-1, 1e0, 3e0, 1e1, 3e1, 1e2]
 	num_iters_list = [30, 100, 300]
 
 
@@ -106,11 +106,18 @@ for kernel_param in kernel_param_vals:
 
 				else:
 					svm = LinearSVM_twoclass()
-					svm.train(XX_train,y_train,learning_rate=lr,C=C,num_iters=num_iters,verbose=True)
+					svm.train(XX_train,y_train,learning_rate=lr,C=C,num_iters=num_iters,verbose=False)
 					y_val_pred = svm.predict(XX_val)
 					accuracy = np.mean(y_val == y_val_pred)
 
 				print "LR:", lr, " NumIters:", num_iters, " C:", C, " KP:", kernel_param, " Accuracy:", accuracy
+
+				if C in best_acc_per_C:
+					if accuracy > best_acc_per_C[C]:
+						best_acc_per_C[C] = accuracy
+				else:
+					best_acc_per_C[C] = accuracy
+
 				if accuracy > best_accuracy:
 					best_accuracy = accuracy
 					best_C = C
@@ -119,7 +126,7 @@ for kernel_param in kernel_param_vals:
 					best_num_iters = num_iters
 
 print "Best LR:", best_lr, " Best NumIters:", best_num_iters, " Best C:", best_C, " BestKP:", best_kernel_param, " Best Accuracy:", best_accuracy
-
+print best_acc_per_C
 
 
 #############################################################################
