@@ -3,6 +3,24 @@ import utils
 import scipy.io
 import numpy as np
 from linear_classifier import LinearSVM_twoclass
+import matplotlib.pyplot as plt
+
+# Graph Data
+graph_data = False
+if graph_data:
+	C_plot_data = {0.001: 0.95125, 0.003: 0.97, 0.01: 0.97125, 0.03: 0.97375, 0.1: 0.975, 0.3: 0.9775, 1: 0.98, 3: 0.9775, 10: 0.97875, 30: 0.97875, 100: 0.97875, 300: 0.97875, 1000: 0.975}
+	C_vec = [.001, .003, .01, .03, .1, .3, 1, 3, 10, 30, 100, 300, 1000]
+	error_val = [0.95125, 0.97, 0.97125, 0.97375, 0.975, 0.9775, 0.98, 0.9775, 0.97875, 0.97875, 0.97875, 0.97875, 0.975]
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+	plt.plot(C_vec,error_val,'b-')
+	plt.title('Variation in validation error with C')
+	plt.xlabel('C')
+	plt.ylabel('Validation error')
+	plt.ylim([0.9,1.0])
+	ax.set_xscale('log')
+	plt.savefig('CGraph.pdf')
 
 
 #############################################################################
@@ -11,16 +29,19 @@ from linear_classifier import LinearSVM_twoclass
 
 poly = preprocessing.PolynomialFeatures(1)
 X,y = utils.load_mat('data/spamTrain.mat')
+X = X - 0.5  # Optional
 XX = poly.fit_transform(X)
 yy = np.ones(y.shape)
 yy[y==0] = -1
 
 test_data = scipy.io.loadmat('data/spamTest.mat')
 X_test = test_data['Xtest']
+X_test = X_test - 0.5  # Optional
 XX_test = poly.fit_transform(X_test)
 y_test = test_data['ytest'].flatten()
 yy_test = np.ones(y_test.shape)
 yy_test[y_test==0] = -1
+
 
 #############################################################################
 # your code for setting up the best SVM classifier for this dataset         #
@@ -30,12 +51,8 @@ yy_test[y_test==0] = -1
 #############################################################################
 # your experiments below
 
-# C = 1
-svm = LinearSVM_twoclass()
-# svm.theta = np.zeros((X.shape[1],))
-# svm.train(X,yy,learning_rate=1e-2,C=C,num_iters=2000,verbose=True)
-
 print "Selecting Hyperparameters..."
+svm = LinearSVM_twoclass()
 X_train, X_val, y_train, y_val = cross_validation.train_test_split(X, yy, test_size=0.2)
 XX_train = poly.fit_transform(X_train)
 XX_val = poly.fit_transform(X_val)
@@ -49,7 +66,7 @@ best_lr = 1e0
 best_num_iters = 100
 best_acc_per_C = {}
 
-kernel_type = None
+kernel_type = "polynomial"
 
 if kernel_type == "gaussian":
 	kernel = utils.gaussian_kernel
@@ -60,20 +77,20 @@ if kernel_type == "gaussian":
 
 elif kernel_type == "polynomial":
 	kernel = utils.polynomial_kernel
-	# kernel_param_vals = [-10, -1, 0, 1, 10]  # For c
-	kernel_param_vals = [-10]
-	# Cvals = [.1, 1, 10]
-	Cvals = [.1]
-	# learning_rates = [1e-2, 1e-1, 1e0, 1e1]
-	learning_rates = [1e-2]
+	kernel_param_vals = [-10, -1, 0, 1, 10]  # For c
+	# kernel_param_vals = [-10]
+	Cvals = [.1, 1, 10]
+	# Cvals = [.1]
+	learning_rates = [1e-2, 1e-1, 1e0, 1e1]
+	# learning_rates = [1e-2]
 	num_iters_list = [100]
 
 else:
 	kernel = None
 	kernel_param_vals = [None]
-	# Cvals = [1, 3, 10]
-	# learning_rates = [3e-1, 1e0, 3e0]
-	# num_iters_list = [30, 100, 300]
+	# Cvals = [1, 3, 10]  # Refined Search Space
+	# learning_rates = [3e-1, 1e0, 3e0]  # Refined Search Space
+	# num_iters_list = [30, 100, 300]  # Refined Search Space
 	Cvals = [.001, .003, .01, .03, .1, .3, 1, 3, 10, 30, 100, 300, 1000]
 	learning_rates = [1e-2, 3e-2, 1e-1, 3e-1, 1e0, 3e0, 1e1, 3e1, 1e2]
 	num_iters_list = [30, 100, 300]
