@@ -1,4 +1,5 @@
 *.pyc
+*.pickle
 .idea/
 cifar_theta.pdf
 data/

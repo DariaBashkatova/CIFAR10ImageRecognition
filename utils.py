@@ -1,5 +1,6 @@
 import csv
 import numpy as np
+import cPickle as pickle
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import PolynomialFeatures
 from PIL import Image
@@ -142,4 +143,25 @@ def print_accuracy_report(y_test, y_test_pred):
 	print c_matrix
 	print accuracy_per_class.round(3) * 100
 	return
+
+
+def dump(data, filename):
+	"""
+	Dump data into pickled form into a file of name filename.
+	Filename should end in ".pickle"
+	"""
+	with open('X_HOG.pickle', 'wb') as f:
+		pickle.dump(X, f, -1)
+	return
+
+
+def load(filename):
+	"""
+	Load data from pickled form from a file of name filename.
+	Filename should end in ".pickle"
+	"""
+	with open('X_HOG.pickle', 'rb') as f:
+		return pickle.load(f)
+	return
+
 
