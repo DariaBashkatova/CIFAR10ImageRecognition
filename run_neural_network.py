@@ -15,12 +15,8 @@ hog_repr = True
 training_examples = 50000  # Max = 50000
 start = time.time()
 
-class_to_value_mapping = {"airplane": 0, "automobile": 1, "bird": 2, "cat": 3, "deer": 4,
-						"dog": 5, "frog": 6, "horse": 7, "ship": 8, "truck": 9}
-value_to_class_mapping = {0: "airplane", 1: "automobile", 2: "bird", 3: "cat", 4: "deer",
-						5: "dog", 6: "frog", 7: "horse", 8: "ship", 9: "truck"}
 X_train = utils.get_X("data/train", training_examples, hog_repr=hog_repr, bins=bins)
-y_train = utils.get_y("data/trainLabels.csv", class_to_value_mapping)[range(training_examples)]
+y_train = utils.get_y("data/trainLabels.csv")[range(training_examples)]
 print "TIME:", time.time() - start
 start = time.time()
 
@@ -116,7 +112,7 @@ start = time.time()
 
 
 if FINAL_RUN:
-	utils.y_to_csv(best_y_test_pred, value_to_class_mapping, "data/testLabels.csv")
+	utils.y_to_csv(best_y_test_pred, "data/testLabels.csv")
 
 
 # Evaluate the best softmax classifier on test set (if results are known)

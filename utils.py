@@ -11,6 +11,11 @@ from skimage import color
 import time
 
 
+class_to_value_mapping = {"airplane": 0, "automobile": 1, "bird": 2, "cat": 3, "deer": 4,
+						"dog": 5, "frog": 6, "horse": 7, "ship": 8, "truck": 9}
+value_to_class_mapping = {0: "airplane", 1: "automobile", 2: "bird", 3: "cat", 4: "deer",
+						5: "dog", 6: "frog", 7: "horse", 8: "ship", 9: "truck"}
+
 def pngs_to_matrix(filepath, num_pngs, hog_repr=False):
 	"""
 	Converts a PNG file to a data matrix, without any processing,
@@ -79,7 +84,7 @@ def get_X(pngs_filepath, num_data, hog_repr=False, bins=False):
 		return preprocess(pngs_to_matrix(pngs_filepath, num_data), bins)
 
 
-def get_y(filepath, class_to_value_mapping):
+def get_y(filepath):
 	"""
 	Reads in a CSV of training data "answers" as a y vector,
 	given the filepath to the CSV data
@@ -93,7 +98,7 @@ def get_y(filepath, class_to_value_mapping):
 	return np.array(lines)
 
 
-def y_to_csv(y, value_to_class_mapping, filepath):
+def y_to_csv(y, filepath):
 	"""
 	Writes a vector of classification results (y) in CSV format into a file (location specified by filepath),
 	using the value_to_class_mapping conversion mapping.
@@ -150,8 +155,8 @@ def dump(data, filename):
 	Dump data into pickled form into a file of name filename.
 	Filename should end in ".pickle"
 	"""
-	with open('X_HOG.pickle', 'wb') as f:
-		pickle.dump(X, f, -1)
+	with open(filename, 'wb') as f:
+		pickle.dump(data, f, -1)
 	return
 
 
@@ -160,7 +165,7 @@ def load(filename):
 	Load data from pickled form from a file of name filename.
 	Filename should end in ".pickle"
 	"""
-	with open('X_HOG.pickle', 'rb') as f:
+	with open(filename, 'rb') as f:
 		return pickle.load(f)
 	return
 

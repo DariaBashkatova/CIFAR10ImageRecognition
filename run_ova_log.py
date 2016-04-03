@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn import cross_validation
+from sklearn import model_selection
 from sklearn.metrics import confusion_matrix, classification_report
 from ova_log import ovaLogisticRegressor
 import utils
@@ -7,12 +7,8 @@ import utils
 
 # Initialize variables
 FINAL_RUN = True
-class_to_value_mapping = {"airplane": 0, "automobile": 1, "bird": 2, "cat": 3, "deer": 4,
-						"dog": 5, "frog": 6, "horse": 7, "ship": 8, "truck": 9}
-value_to_class_mapping = {0: "airplane", 1: "automobile", 2: "bird", 3: "cat", 4: "deer",
-						5: "dog", 6: "frog", 7: "horse", 8: "ship", 9: "truck"}
 X = utils.get_X("data/train", 50000)
-y = utils.get_y("data/trainLabels.csv", class_to_value_mapping)
+y = utils.get_y("data/trainLabels.csv")
 
 
 # Create training, validation, and test data sets
@@ -23,9 +19,9 @@ if FINAL_RUN:  # When running on Training Data and untouched Test Data!
 	X_test = utils.get_X("data/test", 300000)
 	y_test = None
 else:  # When running ONLY on Training Data!
-	X_train_val, X_test, y_train_val, y_test = cross_validation.train_test_split(X, y, test_size=0.2)
+	X_train_val, X_test, y_train_val, y_test = model_selection.train_test_split(X, y, test_size=0.2)
 
-X_train, X_val, y_train, y_val = cross_validation.train_test_split(X_train_val, y_train_val, test_size=0.2)
+X_train, X_val, y_train, y_val = model_selection.train_test_split(X_train_val, y_train_val, test_size=0.2)
 
 # Select Hyperparameters
 print "Selecting Hyperparameters..."
@@ -64,19 +60,11 @@ best_ova_log_reg_final.train(X_train_val, y_train_val, best_ova_log_reg.reg, bes
 # Make and store predictions!
 print "Making Final Predictions..."
 y_test_pred = best_ova_log_reg_final.predict(X_test)
-utils.y_to_csv(y_test_pred, value_to_class_mapping, "data/testLabels.csv")
+utils.y_to_csv(y_test_pred, "data/testLabels.csv")
 
 
 # Evaluate the best softmax classifier on test set (if results are known)
 if y_test is not None:
 	test_accuracy = np.mean(y_test == y_test_pred)
 	print "OVA Logistic Regression Test Set Accuracy: ", test_accuracy
-
-	c_matrix = confusion_matrix(y_test, y_test_pred)
-	print c_matrix
-
-	num_songs_actual = np.sum(c_matrix, axis=1)
-	accuracy_per_class = np.zeros(10)
-	for i in range(10):
-		accuracy_per_class[i] = c_matrix[i, i] / (1.0 * num_songs_actual[i])
-	print accuracy_per_class.round(3) * 100
+	utils.print_accuracy_report(y_test, y_test_pred)
