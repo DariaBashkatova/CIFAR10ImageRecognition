@@ -1,4 +1,4 @@
-from sklearn import cross_validation, preprocessing, metrics
+from sklearn import model_selection, preprocessing, metrics
 import utils
 import scipy.io
 import numpy as np
@@ -53,7 +53,7 @@ yy_test[y_test==0] = -1
 
 print "Selecting Hyperparameters..."
 svm = LinearSVM_twoclass()
-X_train, X_val, y_train, y_val = cross_validation.train_test_split(X, yy, test_size=0.2)
+X_train, X_val, y_train, y_val = model_selection.train_test_split(X, yy, test_size=0.2)
 XX_train = poly.fit_transform(X_train)
 XX_val = poly.fit_transform(X_val)
 

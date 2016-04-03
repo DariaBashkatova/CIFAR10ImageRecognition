@@ -1,14 +1,16 @@
 import csv
 import numpy as np
+from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import PolynomialFeatures
 from PIL import Image
 import math
 import random
 from skimage.feature import hog
 from skimage import color
+import time
 
 
-def pngs_to_matrix(filepath, num_pngs):
+def pngs_to_matrix(filepath, num_pngs, hog_repr=False):
 	"""
 	Converts a PNG file to a data matrix, without any processing,
 	given the filepath to the folder containing the images
@@ -17,8 +19,8 @@ def pngs_to_matrix(filepath, num_pngs):
 
 	# Initialize variables
 	pic_dim = 32
-	num_features = 3 * (pic_dim ** 2)
-	X = np.zeros([num_pngs, num_features])
+	X = np.zeros([num_pngs, pic_dim, pic_dim, 3])
+	HOG = np.zeros([num_pngs, pic_dim, pic_dim])  # May need to change later depending on HOG params
 
 	# Add a slash to end of filepath if necessary
 	if filepath[-1] != '/':
@@ -26,16 +28,26 @@ def pngs_to_matrix(filepath, num_pngs):
 
 	# Store pixel data for each image in X matrix
 	for pic_num in range(1, num_pngs + 1):
+		if pic_num % 5000 == 0:
+			print pic_num
+		# RGB Data
 		image = Image.open(filepath + str(pic_num) + ".png")
-		rgb_values = list(image.getdata())
-		cur_feature_num = 0
-		for (r_val, g_val, b_val) in rgb_values:
-			X[pic_num - 1, cur_feature_num] = r_val
-			X[pic_num - 1, cur_feature_num + 1] = g_val
-			X[pic_num - 1, cur_feature_num + 2] = b_val
-			cur_feature_num += 3
+		rgb_values = np.array(list(image.getdata())).reshape([pic_dim, pic_dim, 3])
+		X[pic_num - 1] = rgb_values
 
-	return X
+		# HOG Data
+		if hog_repr:
+			grayscale_values = color.rgb2gray(1.0 * rgb_values)
+			fd, hog_values = hog(grayscale_values, orientations=8, pixels_per_cell=(2, 2),  # TODO: Correct Param Values?
+				cells_per_block=(1, 1), visualise=True)
+			HOG[pic_num - 1] = hog_values
+
+	X = X.reshape(num_pngs, X.size / num_pngs)
+	if hog_repr:
+		HOG = HOG.reshape(num_pngs, HOG.size / num_pngs)
+		return np.concatenate((X, HOG), axis=1)
+	else:
+		return X
 
 
 def preprocess(X_raw, bins=False):
@@ -55,12 +67,15 @@ def preprocess(X_raw, bins=False):
 		return poly.fit_transform(X_scaled).astype(int)
 
 
-def get_X(pngs_filepath, num_data, bins=False):
+def get_X(pngs_filepath, num_data, hog_repr=False, bins=False):
 	"""
 	Converts a PNG file to a data matrix, processing data appropriately,
 	given the filepath to the folder containing the images
 	"""
-	return preprocess(pngs_to_matrix(pngs_filepath, num_data), bins)
+	if hog_repr:
+		return pngs_to_matrix(pngs_filepath, num_data, hog_repr=hog_repr)
+	else:
+		return preprocess(pngs_to_matrix(pngs_filepath, num_data), bins)
 
 
 def get_y(filepath, class_to_value_mapping):
@@ -114,32 +129,17 @@ def rand_hidden_layer_sizes(input_layer_size, output_layer_size, num_hidden_laye
 			layer_sizes.append(log_random(layer_sizes[layer_num], output_layer_size))
 		return layer_sizes[1:]
 
-def pngs_to_matrix_w_hog(filepath, num_pngs):
+
+def print_accuracy_report(y_test, y_test_pred):
 	"""
-	Converts a PNG file to a data matrix, without any processing,
-	given the filepath to the folder containing the images
+	Prints a detailed accuracy report on predicted output when compared to actual answers
 	"""
-	print "Reading Raw Data..."
-
-	# Initialize variables
-	pic_dim = 32
-	num_features = 3 * (pic_dim ** 2)
-	X = np.zeros([num_pngs, pic_dim, pic_dim, 3])
-	HOG = np.zeros([num_pngs, pic_dim, pic_dim])  # May need to change later depending on HOG params
-
-	# Add a slash to end of filepath if necessary
-	if filepath[-1] != '/':
-		filepath += '/'
-
-	# Store pixel data for each image in X matrix
-	for pic_num in range(1, num_pngs + 1):
-		image = Image.open(filepath + str(pic_num) + ".png")
-		rgb_values = np.array(list(image.getdata())).reshape([pic_dim, pic_dim, 3])
-		grayscale_values = color.rgb2gray(1.0 * rgb_values)
-		fd, hog_values = hog(grayscale_values, orientations=8, pixels_per_cell=(2, 2),  # What should these params be?
-			cells_per_block=(1, 1), visualise=True)
-		X[pic_num - 1] = rgb_values
-		HOG[pic_num - 1] = hog_values
-
-	return np.concatenate((X.flatten(), HOG.flatten()))
+	c_matrix = confusion_matrix(y_test, y_test_pred)
+	num_data_actual = np.sum(c_matrix, axis=1)
+	accuracy_per_class = np.zeros(10)
+	for i in range(10):
+		accuracy_per_class[i] = c_matrix[i, i] / (1.0 * num_data_actual[i])
+	print c_matrix
+	print accuracy_per_class.round(3) * 100
+	return
 
