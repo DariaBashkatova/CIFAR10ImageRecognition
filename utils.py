@@ -16,12 +16,15 @@ class_to_value_mapping = {"airplane": 0, "automobile": 1, "bird": 2, "cat": 3, "
 value_to_class_mapping = {0: "airplane", 1: "automobile", 2: "bird", 3: "cat", 4: "deer",
 						5: "dog", 6: "frog", 7: "horse", 8: "ship", 9: "truck"}
 
-def pngs_to_matrix(filepath, num_pngs, hog_repr=False):
+def pngs_to_matrix(filepath, num_pngs, hog_repr=False, include_flipped=False, all_reps=False):
 	"""
-	Converts a PNG file to a data matrix, without any processing,
-	given the filepath to the folder containing the images
+	Converts a PNG file to a data matrix, without any processing, but perhaps data augmentation if specified
+	given the filepath to the folder containing the images.
+	-- hog_repr = True: Adds the HOG representation of the data to the X matrix (takes a while)
+	-- include_flipped = True: Adds the flipped versions of images to the X matrix
+	-- all_reps = True: Returns all possible combinations of representations (only useful when trying to pickle data)
 	"""
-	print "Reading Raw Data..."
+	print("Reading Raw Data...")
 
 	# Initialize variables
 	pic_dim = 32
@@ -35,25 +38,44 @@ def pngs_to_matrix(filepath, num_pngs, hog_repr=False):
 	# Store pixel data for each image in X matrix
 	for pic_num in range(1, num_pngs + 1):
 		if pic_num % 5000 == 0:
-			print pic_num
+			print(pic_num)
 		# RGB Data
 		image = Image.open(filepath + str(pic_num) + ".png")
 		rgb_values = np.array(list(image.getdata())).reshape([pic_dim, pic_dim, 3])
 		X[pic_num - 1] = rgb_values
 
 		# HOG Data
-		if hog_repr:
+		if hog_repr or all_reps:
 			grayscale_values = color.rgb2gray(1.0 * rgb_values)
 			fd, hog_values = hog(grayscale_values, orientations=8, pixels_per_cell=(2, 2),  # TODO: Correct Param Values?
 				cells_per_block=(1, 1), visualise=True)
 			HOG[pic_num - 1] = hog_values
 
 	X = X.reshape(num_pngs, X.size / num_pngs)
+
+	# If all representations need to be returned (useful only really for pickling)
+	if all_reps:
+		X_with_flipped = np.concatenate((X, np.fliplr(X)))
+		HOG = HOG.reshape(num_pngs, HOG.size / num_pngs)
+		HOG_with_flipped = np.concatenate((HOG, np.fliplr(HOG)))
+		# Returns X, X with flipped data, X with HOG repr, and X with flipped data and in HOG repr
+		return X, X_with_flipped, np.concatenate((X, HOG), axis=1),\
+				np.concatenate((X_with_flipped, HOG_with_flipped), axis=1)
+
+	# Return data with right form of augmentation
 	if hog_repr:
 		HOG = HOG.reshape(num_pngs, HOG.size / num_pngs)
-		return np.concatenate((X, HOG), axis=1)
+		if include_flipped:
+			X_with_flipped = np.concatenate((X, np.fliplr(X)))
+			HOG_with_flipped = np.concatenate((HOG, np.fliplr(HOG)))
+			return np.concatenate((X_with_flipped, HOG_with_flipped), axis=1)
+		else:
+			return np.concatenate((X, HOG), axis=1)
 	else:
-		return X
+		if include_flipped:
+			return np.concatenate((X, np.fliplr(X)))
+		else:
+			return X
 
 
 def preprocess(X_raw, bins=False):
@@ -63,7 +85,7 @@ def preprocess(X_raw, bins=False):
 	2. Adds intercept term
 	3. Combines features as desired (if at all)
 	"""
-	print "Preprocessing Data..."
+	print("Preprocessing Data...")
 	poly = PolynomialFeatures(degree=1, include_bias=True)
 	if not bins:
 		X_scaled = X_raw / 255.0  # Feature scales to [0, 1] -> Later try [-1, 1]?
@@ -73,11 +95,13 @@ def preprocess(X_raw, bins=False):
 		return poly.fit_transform(X_scaled).astype(int)
 
 
-def get_X(pngs_filepath, num_data, hog_repr=False, bins=False):
+def get_X(pngs_filepath, num_data, hog_repr=False, include_flipped=False, all_reps=False, bins=False):
 	"""
 	Converts a PNG file to a data matrix, processing data appropriately,
 	given the filepath to the folder containing the images
 	"""
+	if all_reps:
+		return pngs_to_matrix(pngs_filepath, num_data, all_reps=all_reps)
 	if hog_repr:
 		return pngs_to_matrix(pngs_filepath, num_data, hog_repr=hog_repr)
 	else:
@@ -145,8 +169,8 @@ def print_accuracy_report(y_test, y_test_pred):
 	accuracy_per_class = np.zeros(10)
 	for i in range(10):
 		accuracy_per_class[i] = c_matrix[i, i] / (1.0 * num_data_actual[i])
-	print c_matrix
-	print accuracy_per_class.round(3) * 100
+	print(c_matrix)
+	print(accuracy_per_class.round(3) * 100)
 	return
 
 
@@ -169,4 +193,14 @@ def load(filename):
 		return pickle.load(f)
 	return
 
+# num_images = 50000
+# print num_images
+# all_representations = get_X("data/train", num_images, all_reps=True)
+# dump(all_representations[0], "X.pickle")
+# dump(all_representations[1], "X_flipped.pickle")
+# dump(all_representations[2], "X_HOG.pickle")
+# dump(all_representations[3], "X_HOG_flipped.pickle")
 
+# all_representations = get_X("data/test", 300000, all_reps=True)
+# dump(all_representations[0], "XTEST.pickle")
+# dump(all_representations[2], "XTEST_HOG.pickle")
