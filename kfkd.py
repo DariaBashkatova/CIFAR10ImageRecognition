@@ -108,7 +108,7 @@ def plot_sample(x, y, axis):
 
 
 plot_bool = False
-part = 3
+part = 5
 
 # Part 1!
 if part == 1:
@@ -170,12 +170,9 @@ if part == 1:
 # Part 2!
 if part == 2:
     print "Part 2! Loading data..."
-    start = time.time()
     X, y = load2d()  # load 2-d data
-    print time.time() - start
 
     print "Training Neural Net..."
-    start = time.time()
     net2 = NeuralNet(
         layers=[
             ('input', layers.InputLayer),
@@ -205,25 +202,19 @@ if part == 2:
         )
 
     net2.fit(X, y)
-    print time.time() - start
 
     # Training for 1000 epochs will take a while.  We'll pickle the
     # trained model so that we can load it back later:
     print "Pickling model..."
-    start = time.time()
     with open('net2.pickle', 'wb') as f:
         pickle.dump(net2, f, -1)
-    print time.time() - start
 
 
 if part == 3:
     print "Part 3! Loading data..."
-    start = time.time()
     X, y = load2d()  # load 2-d data
-    print time.time() - start
 
     print "Training Neural Net..."
-    start = time.time()
     net3 = NeuralNet(
         layers=[
             ('input', layers.InputLayer),
@@ -254,23 +245,17 @@ if part == 3:
         )
 
     net3.fit(X, y)
-    print time.time() - start
 
     print "Pickling data..."
-    start = time.time()
     with open('net3.pickle', 'wb') as f:
         pickle.dump(net3, f, -1)
-    print time.time() - start
 
 
 if part == 4:
     print "Part 4! Loading data..."
-    start = time.time()
     X, y = load2d()  # load 2-d data
-    print time.time() - start
 
     print "Training Neural Net..."
-    start = time.time()
     net4 = NeuralNet(
         layers=[
             ('input', layers.InputLayer),
@@ -296,20 +281,61 @@ if part == 4:
 
         regression=True,
         on_epoch_finished=[
-        AdjustVariable('update_learning_rate', start=0.03, stop=0.0001),
-        AdjustVariable('update_momentum', start=0.9, stop=0.999),
+            AdjustVariable('update_learning_rate', start=0.03, stop=0.0001),
+            AdjustVariable('update_momentum', start=0.9, stop=0.999),
         ],
         max_epochs=3000,
         verbose=1,
         )
 
     net4.fit(X, y)
-    print time.time() - start
 
     print "Pickling data..."
-    start = time.time()
     with open('net4.pickle', 'wb') as f:
-        pickle.dump(net3, f, -1)
-    print time.time() - start
+        pickle.dump(net4, f, -1)
 
+
+if part == 5:
+    print "Part 5! Loading data..."
+    X, y = load2d()  # load 2-d data
+
+    print "Training Neural Net..."
+    net5 = NeuralNet(
+        layers=[
+            ('input', layers.InputLayer),
+            ('conv1', layers.Conv2DLayer),
+            ('pool1', layers.MaxPool2DLayer),
+            ('conv2', layers.Conv2DLayer),
+            ('pool2', layers.MaxPool2DLayer),
+            ('conv3', layers.Conv2DLayer),
+            ('pool3', layers.MaxPool2DLayer),
+            ('hidden4', layers.DenseLayer),
+            ('hidden5', layers.DenseLayer),
+            ('output', layers.DenseLayer),
+            ],
+        input_shape=(None, 1, 96, 96),
+        conv1_num_filters=32, conv1_filter_size=(3, 3), pool1_pool_size=(2, 2),
+        conv2_num_filters=64, conv2_filter_size=(2, 2), pool2_pool_size=(2, 2),
+        conv3_num_filters=128, conv3_filter_size=(2, 2), pool3_pool_size=(2, 2),
+        hidden4_num_units=500, hidden5_num_units=500,
+        output_num_units=30, output_nonlinearity=None,
+
+        update_learning_rate=theano.shared(float32(0.03)),
+        update_momentum=theano.shared(float32(0.9)),
+
+        regression=True,
+        batch_iterator_train=FlipBatchIterator(batch_size=128),
+        on_epoch_finished=[
+            AdjustVariable('update_learning_rate', start=0.03, stop=0.0001),
+            AdjustVariable('update_momentum', start=0.9, stop=0.999),
+        ],
+        max_epochs=3000,
+        verbose=1,
+        )
+
+    net5.fit(X, y)
+
+    print "Pickling data..."
+    with open('net5.pickle', 'wb') as f:
+        pickle.dump(net5, f, -1)
 

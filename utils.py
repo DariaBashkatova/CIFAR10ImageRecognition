@@ -8,6 +8,7 @@ import math
 import random
 from skimage.feature import hog
 from skimage import color
+import sys
 import time
 
 
@@ -179,6 +180,7 @@ def dump(data, filename):
 	Dump data into pickled form into a file of name filename.
 	Filename should end in ".pickle"
 	"""
+	sys.setrecursionlimit(10000)
 	with open(filename, 'wb') as f:
 		pickle.dump(data, f, -1)
 	return
@@ -200,6 +202,9 @@ def load(filename):
 # dump(all_representations[1], "X_flipped.pickle")
 # dump(all_representations[2], "X_HOG.pickle")
 # dump(all_representations[3], "X_HOG_flipped.pickle")
+
+X = load('X_HOG_flipped.pickle')
+print X.shape
 
 # all_representations = get_X("data/test", 300000, all_reps=True)
 # dump(all_representations[0], "XTEST.pickle")
