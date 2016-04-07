@@ -115,7 +115,7 @@ if FINAL_RUN:
 	utils.y_to_csv(best_y_test_pred, "data/testLabels.csv")
 
 
-# Evaluate the best softmax classifier on test set (if results are known)
+# Evaluate the best classifier on test set (if results are known)
 if y_test is not None:
 	print "Neural Network Test Set Accuracy: ", best_accuracy
 	utils.print_accuracy_report(y_test, best_y_test_pred)

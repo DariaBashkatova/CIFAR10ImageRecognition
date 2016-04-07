@@ -195,6 +195,24 @@ def load(filename):
 		return pickle.load(f)
 	return
 
+
+def convert_y_to_matrix(y, num_classes=10):
+	"""
+	Useful data conversion function for classification/ova schemes
+	"""
+	y_matrix = np.zeros((len(y), num_classes))
+	for i in range(len(y)):
+		y_matrix[i, y[i]] = 1.0
+	return y_matrix
+
+
+def load2d():
+	"""
+	Loads in 2d image data into a num_examples x num_channels x num_dim x num_dim matrix
+	"""
+	# TODO!
+	return
+
 # num_images = 50000
 # print num_images
 # all_representations = get_X("data/train", num_images, all_reps=True)
@@ -202,9 +220,6 @@ def load(filename):
 # dump(all_representations[1], "X_flipped.pickle")
 # dump(all_representations[2], "X_HOG.pickle")
 # dump(all_representations[3], "X_HOG_flipped.pickle")
-
-X = load('X_HOG_flipped.pickle')
-print X.shape
 
 # all_representations = get_X("data/test", 300000, all_reps=True)
 # dump(all_representations[0], "XTEST.pickle")

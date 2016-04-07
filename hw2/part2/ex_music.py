@@ -17,7 +17,7 @@ X,y = music_utils.read_ceps(genres,MUSIC_DIR)
 
 #  divide X into train and test sets
 X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=0.2)
-
+print y_train.shape
 # select a regularization parameter
 reg = utils.select_lambda_crossval_log_scale(X_train, y_train, 0.0001, 10000.0, 10.0, penalty)
 
