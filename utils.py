@@ -206,12 +206,32 @@ def convert_y_to_matrix(y, num_classes=10):
 	return y_matrix
 
 
-def load2d():
+def load2d(filepath, num_pngs):
 	"""
 	Loads in 2d image data into a num_examples x num_channels x num_dim x num_dim matrix
 	"""
 	# TODO!
-	return
+	print("Reading Raw Data in 2D Form...")
+
+	# Initialize variables
+	num_channels = 3
+	pic_dim = 32
+	X = np.zeros([num_pngs, num_channels, pic_dim, pic_dim])
+
+	# Add a slash to end of filepath if necessary
+	if filepath[-1] != '/':
+		filepath += '/'
+
+	# Store pixel data for each image in X matrix
+	for pic_num in range(1, num_pngs + 1):
+		if pic_num % 5000 == 0:
+			print(pic_num)
+		# RGB Data
+		image = Image.open(filepath + str(pic_num) + ".png")
+		X[pic_num - 1] = np.array(list(image.getdata())).T.reshape(3, pic_dim, pic_dim)
+
+	return X
+
 
 # num_images = 50000
 # print num_images
@@ -224,3 +244,5 @@ def load2d():
 # all_representations = get_X("data/test", 300000, all_reps=True)
 # dump(all_representations[0], "XTEST.pickle")
 # dump(all_representations[2], "XTEST_HOG.pickle")
+
+# print load2d("data/train", 2)
