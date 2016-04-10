@@ -44,7 +44,7 @@ def get_CIFAR10_data(num_training=49000, num_validation=1000, num_test=1000):
     condensed to a single function.
     """
     # Load the raw CIFAR-10 data
-    cifar10_dir = '/Users/devika/Dropbox/devika/Documents/Teaching/comp540/comp540_spr2016/pa3/pa3_code/datasets/cifar-10-batches-py'
+    cifar10_dir = '/Users/Ethan/CS/TermProject/hw3/datasets/cifar-10-batches-py'
     X_train, y_train, X_test, y_test = load_CIFAR10(cifar10_dir)
         
     # Subsample the data
@@ -75,4 +75,4 @@ def get_CIFAR10_data(num_training=49000, num_validation=1000, num_test=1000):
       'X_val': X_val, 'y_val': y_val,
       'X_test': X_test, 'y_test': y_test,
     }
-    
+

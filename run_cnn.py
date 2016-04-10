@@ -44,28 +44,7 @@ y_test = y_test.astype(np.uint8)
 
 
 # Train and Test Model
-print "Training Neural Net..."
-# nn = NeuralNet(
-# 	layers=[  # three layers: one hidden layer
-# 		('input', layers.InputLayer),
-# 		('hidden', layers.DenseLayer),
-# 		('output', layers.DenseLayer),
-# 		],
-# 	# layer parameters:
-# 	input_shape=(None, X_train.shape[1]),  # 96x96 input pixels per batch
-# 	hidden_num_units=1582,  # number of units in hidden layer
-# 	output_nonlinearity=softmax,  # output layer uses identity function
-# 	output_num_units=10,  # 1 target values
-#
-# 	# optimization method:
-# 	update=nesterov_momentum,
-# 	update_learning_rate=0.01,
-# 	update_momentum=0.9,
-#
-# 	regression=False,  # flag to indicate we're dealing with regression problem
-# 	max_epochs=400,  # we want to train this many epochs
-# 	verbose=1,
-# 	)
+print "Training CNN..."
 
 nn = NeuralNet(
 		layers=[

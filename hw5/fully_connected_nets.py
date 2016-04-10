@@ -66,7 +66,7 @@ correct_out = np.array([[ 1.49834967,  1.70660132,  1.91485297],
                         [ 3.25553199,  3.5141327,   3.77273342]])
 
 # Compare your output with ours. The error should be around 1e-9.
-if out:
+if out is not None:
   print 'Testing affine_forward function:'
   print 'difference (should be around 1e-9): ', rel_error(out, correct_out)
 
