@@ -2,6 +2,7 @@ import numpy as np
 import theano
 import utils
 from lasagne import layers
+from lasagne.init import HeNormal
 from lasagne.nonlinearities import softmax
 from lasagne.nonlinearities import rectify
 from nolearn.lasagne import BatchIterator
@@ -64,7 +65,7 @@ class FlipBatchIterator(BatchIterator):
 
 
 class AdjustVariable(object):
-	def __init__(self, name, start=0.03, stop=0.001):
+	def __init__(self, name, start=0.01, stop=0.001):
 		self.name = name
 		self.start, self.stop = start, stop
 		self.ls = None
@@ -76,6 +77,29 @@ class AdjustVariable(object):
 		epoch = train_history[-1]['epoch']
 		new_value = utils.float32(self.ls[epoch - 1])
 		getattr(nn, self.name).set_value(new_value)
+		
+
+class EarlyStopping(object):
+	def __init__(self, patience=100):
+		self.patience = patience
+		self.best_valid = np.inf
+		self.best_valid_epoch = 0
+		self.best_weights = None
+
+	def __call__(self, nn, train_history):
+		current_valid = train_history[-1]['valid_loss']
+		current_epoch = train_history[-1]['epoch']
+		if current_valid < self.best_valid:
+			self.best_valid = current_valid
+			self.best_valid_epoch = current_epoch
+			self.best_weights = nn.get_all_params_values()
+		elif self.best_valid_epoch + self.patience < current_epoch:
+			print("Early stopping.")
+			print("Best valid loss was {:.6f} at epoch {}.".format(
+				self.best_valid, self.best_valid_epoch))
+			nn.load_params_from(self.best_weights)
+			raise StopIteration()
+
 
 nn = NeuralNet(
 		layers=[
@@ -95,19 +119,20 @@ nn = NeuralNet(
 			('output', layers.DenseLayer),
 			],
 		input_shape=(None, 3, 32, 32),
-		conv1_num_filters=32, conv1_filter_size=(5, 5), pool1_pool_size=(2, 2), dropout1_p=0.5,
-		conv2_num_filters=32, conv2_filter_size=(5, 5), pool2_pool_size=(2, 2), dropout2_p=0.5,
-		conv3_num_filters=64, conv3_filter_size=(5, 5), pool3_pool_size=(2, 2), dropout3_p=0.5,
-		hidden4_num_units=64, dropout4_p=0.5, hidden5_num_units=10,
+		conv1_num_filters=32, conv1_filter_size=(5, 5), conv1_W=HeNormal(), pool1_pool_size=(2, 2), dropout1_p=0.5,
+		conv2_num_filters=32, conv2_filter_size=(5, 5), conv2_W=HeNormal(), pool2_pool_size=(2, 2), dropout2_p=0.5,
+		conv3_num_filters=64, conv3_filter_size=(5, 5), conv3_W=HeNormal(), pool3_pool_size=(2, 2), dropout3_p=0.5,
+		hidden4_num_units=64, hidden4_W=HeNormal(), dropout4_p=0.5, hidden5_num_units=10, hidden5_W=HeNormal(),
 		output_num_units=10, output_nonlinearity=softmax,
 
-		update_learning_rate=theano.shared(utils.float32(0.03)),  # constant lr = 0.01 works great
+		update_learning_rate=theano.shared(utils.float32(0.01)),  # constant lr = 0.01 works great
 		update_momentum=theano.shared(utils.float32(0.9)),
 
 		batch_iterator_train=FlipBatchIterator(batch_size=128),
 		on_epoch_finished=[
-			AdjustVariable('update_learning_rate', start=0.03, stop=0.0001),
+			AdjustVariable('update_learning_rate', start=0.01, stop=0.0001),
 			AdjustVariable('update_momentum', start=0.9, stop=0.999),
+			EarlyStopping(patience=200),
 		],
 
 		max_epochs=100,

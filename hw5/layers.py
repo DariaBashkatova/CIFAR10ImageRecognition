@@ -47,7 +47,7 @@ def affine_backward(dout, cache):
     - theta: Weights, of shape (d, h)
 
   Returns a tuple of:
-  - dx: Gradient with respect to x, of shape (m, d1, ..., d_k)
+  - dx: Gradient with respect to x, of shape (m, d_1, ..., d_k)
   - dtheta: Gradient with respect to theta, of shape (d, h)
   - dtheta_0: Gradient with respect to b, of shape (h,)
   """
@@ -59,8 +59,10 @@ def affine_backward(dout, cache):
   # Hint: do not forget to reshape x into (m,d) form
   # 4-5 lines of code expected
 
+  dx = dout.dot(theta.T).reshape(x.shape)
   x = x.reshape(x.shape[0], theta.shape[0])
-
+  dtheta = x.T.dot(dout)
+  dtheta_0 = dout.T.dot(np.ones(x.shape[0]))
 
   #############################################################################
   #                             END OF YOUR CODE                              #
