@@ -233,6 +233,11 @@ def load2d(filepath, num_pngs):
 	return X
 
 
+def float32(k):
+	return np.cast['float32'](k)
+
+
+
 # num_images = 50000
 # print num_images
 # all_representations = get_X("data/train", num_images, all_reps=True)

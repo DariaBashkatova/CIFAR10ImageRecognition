@@ -1,9 +1,10 @@
 import numpy as np
+import theano
 import utils
 from lasagne import layers
 from lasagne.nonlinearities import softmax
 from lasagne.nonlinearities import rectify
-from lasagne.updates import nesterov_momentum
+from nolearn.lasagne import BatchIterator
 from nolearn.lasagne import NeuralNet
 from sklearn import model_selection, preprocessing
 from scipy import stats
@@ -17,8 +18,10 @@ training_examples = 50000  # Max = 50000
 
 # X_train = utils.get_X("data/train", training_examples, hog_repr=hog_repr, bins=bins)
 # X_train = utils.load("X.pickle")
-X_train = utils.load2d("data/train", training_examples)
-y_train = utils.get_y("data/trainLabels.csv")[range(training_examples)]#.reshape(training_examples, 1)
+# X_train = utils.load2d("data/train", training_examples)
+X_train = utils.load("X2d.pickle")
+
+y_train = utils.get_y("data/trainLabels.csv")[range(training_examples)]
 
 
 
@@ -46,6 +49,34 @@ y_test = y_test.astype(np.uint8)
 # Train and Test Model
 print "Training CNN..."
 
+
+class FlipBatchIterator(BatchIterator):
+
+	def transform(self, Xb, yb):
+		Xb, yb = super(FlipBatchIterator, self).transform(Xb, yb)
+
+		# Flip half of the images in this batch at random:
+		bs = Xb.shape[0]
+		indices = np.random.choice(bs, bs / 2, replace=False)
+		Xb[indices] = Xb[indices, :, :, ::-1]
+
+		return Xb, yb
+
+
+class AdjustVariable(object):
+	def __init__(self, name, start=0.03, stop=0.001):
+		self.name = name
+		self.start, self.stop = start, stop
+		self.ls = None
+
+	def __call__(self, nn, train_history):
+		if self.ls is None:
+			self.ls = np.linspace(self.start, self.stop, nn.max_epochs)
+
+		epoch = train_history[-1]['epoch']
+		new_value = utils.float32(self.ls[epoch - 1])
+		getattr(nn, self.name).set_value(new_value)
+
 nn = NeuralNet(
 		layers=[
 			('input', layers.InputLayer),
@@ -59,6 +90,7 @@ nn = NeuralNet(
 			('pool3', layers.MaxPool2DLayer),
 			('dropout3', layers.DropoutLayer),
 			('hidden4', layers.DenseLayer),
+			('dropout4', layers.DropoutLayer),
 			('hidden5', layers.DenseLayer),
 			('output', layers.DenseLayer),
 			],
@@ -66,15 +98,20 @@ nn = NeuralNet(
 		conv1_num_filters=32, conv1_filter_size=(5, 5), pool1_pool_size=(2, 2), dropout1_p=0.5,
 		conv2_num_filters=32, conv2_filter_size=(5, 5), pool2_pool_size=(2, 2), dropout2_p=0.5,
 		conv3_num_filters=64, conv3_filter_size=(5, 5), pool3_pool_size=(2, 2), dropout3_p=0.5,
-		hidden4_num_units=64, hidden5_num_units=10,
+		hidden4_num_units=64, dropout4_p=0.5, hidden5_num_units=10,
 		output_num_units=10, output_nonlinearity=softmax,
 
-		# update=nesterov_momentum,
-		update_learning_rate=0.01,
-		update_momentum=0.9,
+		update_learning_rate=theano.shared(utils.float32(0.03)),  # constant lr = 0.01 works great
+		update_momentum=theano.shared(utils.float32(0.9)),
+
+		batch_iterator_train=FlipBatchIterator(batch_size=128),
+		on_epoch_finished=[
+			AdjustVariable('update_learning_rate', start=0.03, stop=0.0001),
+			AdjustVariable('update_momentum', start=0.9, stop=0.999),
+		],
 
 		max_epochs=100,
-		verbose=2,
+		verbose=1,
 		)
 
 nn.fit(X_train, y_train)

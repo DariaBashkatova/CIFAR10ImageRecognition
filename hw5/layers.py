@@ -59,7 +59,9 @@ def affine_backward(dout, cache):
   # Hint: do not forget to reshape x into (m,d) form
   # 4-5 lines of code expected
 
-  pass
+  x = x.reshape(x.shape[0], theta.shape[0])
+
+
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
