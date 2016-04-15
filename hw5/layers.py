@@ -26,8 +26,10 @@ def affine_forward(x, theta, theta_0):
   #############################################################################
   # 2 lines of code expected
 
+  x_orig_shape = x.shape
   x = x.reshape(x.shape[0], theta.shape[0])
   out = x.dot(theta) + theta_0
+  x = x.reshape(x_orig_shape)
 
   #############################################################################
   #                             END OF YOUR CODE                              #
@@ -87,7 +89,7 @@ def relu_forward(x):
   #############################################################################
   # 1-2 lines of code expected.
 
-  out = np.vectorize(lambda i: i if i > 0 else 0)(x)
+  out = np.maximum(np.zeros(x.shape), x)
 
   #############################################################################
   #                             END OF YOUR CODE                              #
@@ -113,7 +115,8 @@ def relu_backward(dout, cache):
   #############################################################################
   # 1-2 lines of code expected. Hint: use np.where
 
-  pass
+  dx = np.where(x > 0, dout, np.zeros(dout.shape))
+
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
