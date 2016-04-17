@@ -11,10 +11,12 @@ from nolearn.lasagne import NeuralNet
 from scipy import stats
 from sklearn import model_selection, preprocessing
 import random
+import sys
 import time
 
 
 # Initialize variables
+sys.setrecursionlimit(50000)
 FINAL_RUN = False
 training_examples = 50000  # Max = 50000
 
@@ -31,6 +33,7 @@ y_train = utils.get_y("data/trainLabels.csv")[range(training_examples)]
 print "Creating Train and Test Sets..."
 if FINAL_RUN:  # When running on Training Data and untouched Test Data!
 	X_test = utils.load2d("data/test", 300000)
+	# utils.dump(X_test, "XTest2d.pickle")
 	y_test = None
 else:  # When running ONLY on Training Data!
 	X_train, X_test, y_train, y_test = model_selection.train_test_split(X_train, y_train, test_size=0.2, random_state=0)
@@ -38,68 +41,17 @@ else:  # When running ONLY on Training Data!
 
 # Preprocess data
 print "Preprocessing Data..."
-poly = preprocessing.PolynomialFeatures(1)
-# scaler = preprocessing.StandardScaler().fit(X_train)
-# X_train = poly.fit_transform(scaler.transform(X_train))
-# X_test = poly.fit_transform(scaler.transform(X_test))
+# TODO: Subtract per pixel mean!
 X_train /= 255.0
 X_test /= 255.0
-y_train = y_train.astype(np.uint8)
-y_test = y_test.astype(np.uint8)
 X_train = X_train.astype('float32')  # need this cast to use GPU
 X_test = X_test.astype('float32')  # need this case to use GPU
-
+y_train = y_train.astype(np.uint8)
+if y_test is not None:
+	y_test = y_test.astype(np.uint8)
 
 # Train and Test Model
 print "Training CNN..."
-
-# nn = NeuralNet(
-		# layers=[
-		# 	('input', layers.InputLayer),
-		# 	('conv1', layers.Conv2DLayer),
-		# 	('bn1', layers.BatchNormLayer),
-		# 	('conv2', layers.Conv2DLayer),
-		# 	('bn2', layers.BatchNormLayer),
-		# 	('conv3', layers.Conv2DLayer),
-		# 	('bn3', layers.BatchNormLayer),
-		# 	('conv4', layers.Conv2DLayer),
-		# 	('bn4', layers.BatchNormLayer),
-		# 	('conv5', layers.Conv2DLayer),
-		# 	('bn5', layers.BatchNormLayer),
-		# 	('conv6', layers.Conv2DLayer),
-		# 	('bn6', layers.BatchNormLayer),
-		# 	('conv7', layers.Conv2DLayer),
-		# 	('globalpool', layers.GlobalPoolLayer),
-		# 	('output', layers.DenseLayer),
-		# 	],
-        #
-		# input_shape=(None, 3, 32, 32),
-		# conv1_num_filters=16, conv1_filter_size=(3, 3), conv1_pad=1, conv1_W=HeNormal(),
-		# conv2_num_filters=16, conv2_filter_size=(3, 3), conv2_pad=1, conv2_W=HeNormal(),
-		# conv3_num_filters=16, conv3_filter_size=(3, 3), conv3_pad=1, conv3_W=HeNormal(),
-        #
-		# conv4_num_filters=32, conv4_filter_size=(3, 3), conv4_pad=1, conv4_W=HeNormal(), conv4_stride=2,
-		# conv5_num_filters=32, conv5_filter_size=(3, 3), conv5_pad=1, conv5_W=HeNormal(),
-        #
-		# conv6_num_filters=64, conv6_filter_size=(3, 3), conv6_pad=1, conv6_W=HeNormal(), conv6_stride=2,
-		# conv7_num_filters=64, conv7_filter_size=(3, 3), conv7_pad=1, conv7_W=HeNormal(),
-        #
-		# output_num_units=10, output_nonlinearity=softmax,
-        #
-		# update_learning_rate=theano.shared(utils.float32(0.01)),
-		# update_momentum=theano.shared(utils.float32(0.9)),
-        #
-		# batch_iterator_train=nn_utils.FlipBatchIterator(batch_size=128),
-		# on_epoch_finished=[
-		# 	# nn_utils.AdjustVariable('update_learning_rate', start=0.1, stop=0.1),
-		# 	# nn_utils.AdjustVariable('update_momentum', start=0.9, stop=0.9),
-		# 	nn_utils.EarlyStopping(patience=20),
-		# ],
-        #
-		# max_epochs=500,
-		# verbose=1,
-		# )
-
 
 nn = NeuralNet(
     layers=[
@@ -190,30 +142,6 @@ nn = NeuralNet(
         ('bn42', layers.BatchNormLayer),
         ('conv43', layers.Conv2DLayer),
         ('bn43', layers.BatchNormLayer),
-        ('conv44', layers.Conv2DLayer),
-        ('bn44', layers.BatchNormLayer),
-        ('conv45', layers.Conv2DLayer),
-        ('bn45', layers.BatchNormLayer),
-        ('conv46', layers.Conv2DLayer),
-        ('bn46', layers.BatchNormLayer),
-        ('conv47', layers.Conv2DLayer),
-        ('bn47', layers.BatchNormLayer),
-        ('conv48', layers.Conv2DLayer),
-        ('bn48', layers.BatchNormLayer),
-        ('conv49', layers.Conv2DLayer),
-        ('bn49', layers.BatchNormLayer),
-        ('conv50', layers.Conv2DLayer),
-        ('bn50', layers.BatchNormLayer),
-        ('conv51', layers.Conv2DLayer),
-        ('bn51', layers.BatchNormLayer),
-        ('conv52', layers.Conv2DLayer),
-        ('bn52', layers.BatchNormLayer),
-        ('conv53', layers.Conv2DLayer),
-        ('bn53', layers.BatchNormLayer),
-        ('conv54', layers.Conv2DLayer),
-        ('bn54', layers.BatchNormLayer),
-        ('conv55', layers.Conv2DLayer),
-        ('bn55', layers.BatchNormLayer),
         ('globalpool', layers.GlobalPoolLayer),
         ('output', layers.DenseLayer),
         ],
@@ -234,12 +162,12 @@ nn = NeuralNet(
         conv13_num_filters=16, conv13_filter_size=(3, 3), conv13_pad=1, conv13_W=HeNormal(),
         conv14_num_filters=16, conv14_filter_size=(3, 3), conv14_pad=1, conv14_W=HeNormal(),
         conv15_num_filters=16, conv15_filter_size=(3, 3), conv15_pad=1, conv15_W=HeNormal(),
-        conv16_num_filters=16, conv16_filter_size=(3, 3), conv16_pad=1, conv16_W=HeNormal(),
-        conv17_num_filters=16, conv17_filter_size=(3, 3), conv17_pad=1, conv17_W=HeNormal(),
-        conv18_num_filters=16, conv18_filter_size=(3, 3), conv18_pad=1, conv18_W=HeNormal(),
-        conv19_num_filters=16, conv19_filter_size=(3, 3), conv19_pad=1, conv19_W=HeNormal(),
 
-        conv20_stride=2,
+        conv16_stride=2,
+        conv16_num_filters=32, conv16_filter_size=(3, 3), conv16_pad=1, conv16_W=HeNormal(),
+        conv17_num_filters=32, conv17_filter_size=(3, 3), conv17_pad=1, conv17_W=HeNormal(),
+        conv18_num_filters=32, conv18_filter_size=(3, 3), conv18_pad=1, conv18_W=HeNormal(),
+        conv19_num_filters=32, conv19_filter_size=(3, 3), conv19_pad=1, conv19_W=HeNormal(),
         conv20_num_filters=32, conv20_filter_size=(3, 3), conv20_pad=1, conv20_W=HeNormal(),
         conv21_num_filters=32, conv21_filter_size=(3, 3), conv21_pad=1, conv21_W=HeNormal(),
         conv22_num_filters=32, conv22_filter_size=(3, 3), conv22_pad=1, conv22_W=HeNormal(),
@@ -250,53 +178,43 @@ nn = NeuralNet(
         conv27_num_filters=32, conv27_filter_size=(3, 3), conv27_pad=1, conv27_W=HeNormal(),
         conv28_num_filters=32, conv28_filter_size=(3, 3), conv28_pad=1, conv28_W=HeNormal(),
         conv29_num_filters=32, conv29_filter_size=(3, 3), conv29_pad=1, conv29_W=HeNormal(),
-        conv30_num_filters=32, conv30_filter_size=(3, 3), conv30_pad=1, conv30_W=HeNormal(),
-        conv31_num_filters=32, conv31_filter_size=(3, 3), conv31_pad=1, conv31_W=HeNormal(),
-        conv32_num_filters=32, conv32_filter_size=(3, 3), conv32_pad=1, conv32_W=HeNormal(),
-        conv33_num_filters=32, conv33_filter_size=(3, 3), conv33_pad=1, conv33_W=HeNormal(),
-        conv34_num_filters=32, conv34_filter_size=(3, 3), conv34_pad=1, conv34_W=HeNormal(),
-        conv35_num_filters=32, conv35_filter_size=(3, 3), conv35_pad=1, conv35_W=HeNormal(),
-        conv36_num_filters=32, conv36_filter_size=(3, 3), conv36_pad=1, conv36_W=HeNormal(),
-        conv37_num_filters=32, conv37_filter_size=(3, 3), conv37_pad=1, conv37_W=HeNormal(),
 
-        conv38_stride=2,
+        conv30_stride=2,
+        conv30_num_filters=64, conv30_filter_size=(3, 3), conv30_pad=1, conv30_W=HeNormal(),
+        conv31_num_filters=64, conv31_filter_size=(3, 3), conv31_pad=1, conv31_W=HeNormal(),
+        conv32_num_filters=64, conv32_filter_size=(3, 3), conv32_pad=1, conv32_W=HeNormal(),
+        conv33_num_filters=64, conv33_filter_size=(3, 3), conv33_pad=1, conv33_W=HeNormal(),
+        conv34_num_filters=64, conv34_filter_size=(3, 3), conv34_pad=1, conv34_W=HeNormal(),
+        conv35_num_filters=64, conv35_filter_size=(3, 3), conv35_pad=1, conv35_W=HeNormal(),
+        conv36_num_filters=64, conv36_filter_size=(3, 3), conv36_pad=1, conv36_W=HeNormal(),
+        conv37_num_filters=64, conv37_filter_size=(3, 3), conv37_pad=1, conv37_W=HeNormal(),
         conv38_num_filters=64, conv38_filter_size=(3, 3), conv38_pad=1, conv38_W=HeNormal(),
         conv39_num_filters=64, conv39_filter_size=(3, 3), conv39_pad=1, conv39_W=HeNormal(),
         conv40_num_filters=64, conv40_filter_size=(3, 3), conv40_pad=1, conv40_W=HeNormal(),
         conv41_num_filters=64, conv41_filter_size=(3, 3), conv41_pad=1, conv41_W=HeNormal(),
         conv42_num_filters=64, conv42_filter_size=(3, 3), conv42_pad=1, conv42_W=HeNormal(),
         conv43_num_filters=64, conv43_filter_size=(3, 3), conv43_pad=1, conv43_W=HeNormal(),
-        conv44_num_filters=64, conv44_filter_size=(3, 3), conv44_pad=1, conv44_W=HeNormal(),
-        conv45_num_filters=64, conv45_filter_size=(3, 3), conv45_pad=1, conv45_W=HeNormal(),
-        conv46_num_filters=64, conv46_filter_size=(3, 3), conv46_pad=1, conv46_W=HeNormal(),
-        conv47_num_filters=64, conv47_filter_size=(3, 3), conv47_pad=1, conv47_W=HeNormal(),
-        conv48_num_filters=64, conv48_filter_size=(3, 3), conv48_pad=1, conv48_W=HeNormal(),
-        conv49_num_filters=64, conv49_filter_size=(3, 3), conv49_pad=1, conv49_W=HeNormal(),
-        conv50_num_filters=64, conv50_filter_size=(3, 3), conv50_pad=1, conv50_W=HeNormal(),
-        conv51_num_filters=64, conv51_filter_size=(3, 3), conv51_pad=1, conv51_W=HeNormal(),
-        conv52_num_filters=64, conv52_filter_size=(3, 3), conv52_pad=1, conv52_W=HeNormal(),
-        conv53_num_filters=64, conv53_filter_size=(3, 3), conv53_pad=1, conv53_W=HeNormal(),
-        conv54_num_filters=64, conv54_filter_size=(3, 3), conv54_pad=1, conv54_W=HeNormal(),
-        conv55_num_filters=64, conv55_filter_size=(3, 3), conv55_pad=1, conv55_W=HeNormal(),
 
         output_num_units=10, output_nonlinearity=softmax,
 
         # Hyperparameters
         batch_iterator_train=nn_utils.FlipBatchIterator(batch_size=128),
-        update_learning_rate=theano.shared(utils.float32(0.01)),
+        update_learning_rate=theano.shared(utils.float32(0.1)),
         update_momentum=theano.shared(utils.float32(0.9)),
-        # on_epoch_finished=[
+        on_epoch_finished=[
             # nn_utils.AdjustVariable('update_learning_rate', start=0.1, stop=0.1),
             # nn_utils.AdjustVariable('update_momentum', start=0.9, stop=0.9),
-            # nn_utils.EarlyStopping(patience=20),
-        # ],
-        max_epochs=1000,
+            nn_utils.EarlyStopping(patience=30),
+        ],
+		objective_l2=0.0001,
+        max_epochs=10000,
         verbose=1,
         )
 
 
 nn.fit(X_train, y_train)
-utils.dump(nn, "cnn1.pickle")
+values = lasagne.layers.get_all_param_values(nn)
+numpy.savez("CNNParams.npz", values)
 
 best_y_test_pred = nn.predict(X_test)
 train_pred = nn.predict(X_train)
@@ -304,7 +222,7 @@ train_accuracy = np.mean(train_pred == y_train)
 print "CNN Train Accuracy: ", train_accuracy
 
 if FINAL_RUN:
-	utils.y_to_csv(best_y_test_pred, "data/testLabels.csv")
+	utils.y_to_csv(best_y_test_pred, "data/cnnTestLabels.csv")
 
 
 # Evaluate the best classifier on test set (if results are known)
@@ -314,3 +232,4 @@ if y_test is not None:
 	utils.print_accuracy_report(y_test, best_y_test_pred)
 
 
+utils.dump(nn, "cnn2.pickle")

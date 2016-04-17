@@ -180,7 +180,6 @@ def dump(data, filename):
 	Dump data into pickled form into a file of name filename.
 	Filename should end in ".pickle"
 	"""
-	sys.setrecursionlimit(10000)
 	with open(filename, 'wb') as f:
 		pickle.dump(data, f, -1)
 	return

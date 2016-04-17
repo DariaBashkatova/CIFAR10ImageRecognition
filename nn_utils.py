@@ -99,17 +99,18 @@ def print_resnet_cnn(n):
 	print "\n        output_num_units=10, output_nonlinearity=softmax,\n\n" + \
 		  "        # Hyperparameters\n" + \
 		  "        batch_iterator_train=nn_utils.FlipBatchIterator(batch_size=128),\n" +\
-		  "        update_learning_rate=theano.shared(utils.float32(0.01)),\n" +\
+		  "        update_learning_rate=theano.shared(utils.float32(0.1)),\n" +\
 		  "        update_momentum=theano.shared(utils.float32(0.9)),\n" +\
 		  "        on_epoch_finished=[\n" +\
 		  "            # nn_utils.AdjustVariable('update_learning_rate', start=0.1, stop=0.1),\n" +\
 		  "            # nn_utils.AdjustVariable('update_momentum', start=0.9, stop=0.9),\n" +\
-		  "            nn_utils.EarlyStopping(patience=20),\n" +\
+		  "            nn_utils.EarlyStopping(patience=30),\n" +\
 		  "        ],\n" +\
-		  "        max_epochs=1000,\n" +\
+		  "        objective_l2=0.0001," +\
+		  "        max_epochs=10000,\n" +\
 		  "        verbose=1,\n" +\
 		  "        )\n"
 
 	return
 
-# print_resnet_cnn(9)
+# print_resnet_cnn(7)
