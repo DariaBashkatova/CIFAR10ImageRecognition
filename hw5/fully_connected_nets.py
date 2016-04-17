@@ -303,7 +303,23 @@ sgd_solver = None
 # 50% accuracy on the validation set.                                             #
 ###################################################################################
 
-pass
+hidden_dim = 100
+reg = 0.0
+print "TRAINING TWO LAYER NET"
+print hidden_dim, reg
+model = fc_net.TwoLayerNet(hidden_dim=hidden_dim, reg=reg)
+solver = solver.Solver(model, data,
+                update_rule='sgd',
+                optim_config={
+                  'learning_rate': 1e-3,
+                },
+                lr_decay=0.95,
+                num_epochs=10, batch_size=100,
+                print_every=100)
+solver.train()
+
+print "DONE TRAINING TWO LAYER NET"
+
 ##################################################################################
 #                             END OF YOUR CODE                                   #
 ##################################################################################

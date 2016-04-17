@@ -26,8 +26,8 @@ def affine_forward(x, theta, theta_0):
   #############################################################################
   # 2 lines of code expected
 
-  x = x.reshape(x.shape[0], theta.shape[0])
-  out = x.dot(theta) + theta_0
+  xr = x.reshape(x.shape[0], theta.shape[0])
+  out = xr.dot(theta) + theta_0
 
   #############################################################################
   #                             END OF YOUR CODE                              #
@@ -60,9 +60,10 @@ def affine_backward(dout, cache):
   # 4-5 lines of code expected
 
   dx = dout.dot(theta.T).reshape(x.shape)
-  x = x.reshape(x.shape[0], theta.shape[0])
-  dtheta = x.T.dot(dout)
-  dtheta_0 = dout.T.dot(np.ones(x.shape[0]))
+  xr = x.reshape(x.shape[0], theta.shape[0])
+  dtheta = xr.T.dot(dout)
+  dtheta_0 = np.sum(dout, axis=0)
+  # dtheta_0 = dout.T.dot(np.ones(x.shape[0]))
 
   #############################################################################
   #                             END OF YOUR CODE                              #
@@ -87,7 +88,7 @@ def relu_forward(x):
   #############################################################################
   # 1-2 lines of code expected.
 
-  out = np.vectorize(lambda i: i if i > 0 else 0)(x)
+  out = np.maximum(np.zeros(x.shape), x)
 
   #############################################################################
   #                             END OF YOUR CODE                              #
@@ -113,7 +114,8 @@ def relu_backward(dout, cache):
   #############################################################################
   # 1-2 lines of code expected. Hint: use np.where
 
-  pass
+  dx = np.where(x > 0.0, dout, np.zeros(dout.shape))
+
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################

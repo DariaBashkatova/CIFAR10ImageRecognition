@@ -45,8 +45,15 @@ class TwoLayerNet(object):
     # layer weights and biases using the keys 'theta2' and 'theta2_0'.         #
     ############################################################################
     # 4 lines of code expected
+    # self.params['theta1_0'] = np.random.normal(0, weight_scale, hidden_dim)  # Make this a length 1 vector instead?
+    # self.params['theta2_0'] = np.random.normal(0, weight_scale, num_classes)  # Make this a length 1 vector instead?
+    # self.params['theta1'] = np.random.normal(0, weight_scale, input_dim * hidden_dim)
+    # self.params['theta2'] = np.random.normal(0, weight_scale, hidden_dim * num_classes)
+    self.params['theta1_0'] = np.zeros(hidden_dim)  # Make this a length 1 vector instead?
+    self.params['theta2_0'] = np.zeros(num_classes)  # Make this a length 1 vector instead?
+    self.params['theta1'] = weight_scale * np.random.randn(input_dim, hidden_dim)
+    self.params['theta2'] = weight_scale * np.random.randn(hidden_dim, num_classes)
 
-    pass
     ############################################################################
     #                             END OF YOUR CODE                             #
     ############################################################################
@@ -78,8 +85,10 @@ class TwoLayerNet(object):
     ############################################################################
     # Hint: unpack the weight parameters from self.params
     # 3 lines of code expected
+    out1, cache1 = affine_relu_forward(X, self.params['theta1'], self.params['theta1_0'])
+    fc_cache1, relu_cache1 = cache1
+    output, fc_cache2 = affine_forward(out1, self.params['theta2'], self.params['theta2_0'])
 
-    pass
     ############################################################################
     #                             END OF YOUR CODE                             #
     ############################################################################
@@ -97,11 +106,20 @@ class TwoLayerNet(object):
     #                                                                          #
     # NOTE: To ensure that your implementation matches ours and you pass the   #
     # automated tests, make sure that your L2 regularization includes a factor #
-    # of 0.5 to simplify the expression for the gradient.                      #
+    # of 0.5 to simplify the expression for the gradient. affine_backward(dout, cache) #
     ############################################################################
     # 8 lines of code expected
+    loss, dout = softmax_loss(output, y)
+    dx2, grads['theta2'], grads['theta2_0'] = affine_backward(dout, fc_cache2)
+    dx1, grads['theta1'], grads['theta1_0'] = affine_relu_backward(dx2, cache1)
 
-    pass
+    # Add Regularization
+    grads['theta2'] += self.reg * self.params['theta2']
+    grads['theta1'] += self.reg * self.params['theta1']
+    loss += (self.reg / 2.0) * np.sum(self.params['theta2'] ** 2)
+    loss += (self.reg / 2.0) * np.sum(self.params['theta1'] ** 2)
+
+
     ############################################################################
     #                             END OF YOUR CODE                             #
     ############################################################################
