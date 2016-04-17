@@ -87,7 +87,7 @@ class TwoLayerNet(object):
     # 3 lines of code expected
     out1, cache1 = affine_relu_forward(X, self.params['theta1'], self.params['theta1_0'])
     fc_cache1, relu_cache1 = cache1
-    output, fc_cache2 = affine_forward(relu_cache1, self.params['theta2'], self.params['theta2_0'])
+    output, fc_cache2 = affine_forward(out1, self.params['theta2'], self.params['theta2_0'])
 
     ############################################################################
     #                             END OF YOUR CODE                             #
@@ -114,8 +114,8 @@ class TwoLayerNet(object):
     dx1, grads['theta1'], grads['theta1_0'] = affine_relu_backward(dx2, cache1)
 
     # Add Regularization
-    grads['theta2'] = self.reg * self.params['theta2']
-    grads['theta1'] = self.reg * self.params['theta1']
+    grads['theta2'] += self.reg * self.params['theta2']
+    grads['theta1'] += self.reg * self.params['theta1']
     loss += (self.reg / 2.0) * np.sum(self.params['theta2'] ** 2)
     loss += (self.reg / 2.0) * np.sum(self.params['theta1'] ** 2)
 

@@ -26,10 +26,8 @@ def affine_forward(x, theta, theta_0):
   #############################################################################
   # 2 lines of code expected
 
-  x_orig_shape = x.shape
-  x = x.reshape(x.shape[0], theta.shape[0])
-  out = x.dot(theta) + theta_0
-  x = x.reshape(x_orig_shape)
+  xr = x.reshape(x.shape[0], theta.shape[0])
+  out = xr.dot(theta) + theta_0
 
   #############################################################################
   #                             END OF YOUR CODE                              #
@@ -62,9 +60,10 @@ def affine_backward(dout, cache):
   # 4-5 lines of code expected
 
   dx = dout.dot(theta.T).reshape(x.shape)
-  x = x.reshape(x.shape[0], theta.shape[0])
-  dtheta = x.T.dot(dout)
-  dtheta_0 = dout.T.dot(np.ones(x.shape[0]))
+  xr = x.reshape(x.shape[0], theta.shape[0])
+  dtheta = xr.T.dot(dout)
+  dtheta_0 = np.sum(dout, axis=0)
+  # dtheta_0 = dout.T.dot(np.ones(x.shape[0]))
 
   #############################################################################
   #                             END OF YOUR CODE                              #
@@ -115,7 +114,7 @@ def relu_backward(dout, cache):
   #############################################################################
   # 1-2 lines of code expected. Hint: use np.where
 
-  dx = np.where(x > 0, dout, np.zeros(dout.shape))
+  dx = np.where(x > 0.0, dout, np.zeros(dout.shape))
 
   #############################################################################
   #                             END OF YOUR CODE                              #
