@@ -249,4 +249,6 @@ def float32(k):
 # dump(all_representations[0], "XTEST.pickle")
 # dump(all_representations[2], "XTEST_HOG.pickle")
 
-# print load2d("data/train", 2)
+# print load2d("data/train", 50)
+X2d = load("X2d.pickle")
+print X2d[:, :, :, :].shape
