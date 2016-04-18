@@ -73,44 +73,44 @@ def print_resnet_cnn(n):
 	print "        ('globalpool', layers.GlobalPoolLayer),\n" +\
 		  "        ('output', layers.DenseLayer),\n" +\
 		  "        ],\n\n" +\
-		  "        input_shape=(None, 3, 32, 32),\n" +\
-		  "        conv1_num_filters=16, conv1_filter_size=(3, 3), conv1_pad=1, conv1_W=HeNormal(),"
+		  "    input_shape=(None, 3, 32, 32),\n" +\
+		  "    conv1_num_filters=16, conv1_filter_size=(3, 3), conv1_pad=1, conv1_W=HeNormal(),"
 
 	for i in range(1, n + 1):
-		print "        conv" + str(2*i) + "_num_filters=16, conv" + str(2*i) +\
+		print "    conv" + str(2*i) + "_num_filters=16, conv" + str(2*i) +\
 			  "_filter_size=(3, 3), conv" + str(2*i) + "_pad=1, conv" + str(2*i) + "_W=HeNormal(),"
-		print "        conv" + str(2*i + 1) + "_num_filters=16, conv" + str(2*i + 1) + \
+		print "    conv" + str(2*i + 1) + "_num_filters=16, conv" + str(2*i + 1) + \
 			  "_filter_size=(3, 3), conv" + str(2*i + 1) + "_pad=1, conv" + str(2*i + 1) + "_W=HeNormal(),"
 
-	print "\n        conv" + str(2*n + 2) + "_stride=2,"
+	print "\n    conv" + str(2*n + 2) + "_stride=2,"
 	for i in range(n + 1, 2*n + 1):
-		print "        conv" + str(2 * i) + "_num_filters=32, conv" + str(2 * i) + \
+		print "    conv" + str(2 * i) + "_num_filters=32, conv" + str(2 * i) + \
 			  "_filter_size=(3, 3), conv" + str(2 * i) + "_pad=1, conv" + str(2 * i) + "_W=HeNormal(),"
-		print "        conv" + str(2 * i + 1) + "_num_filters=32, conv" + str(2 * i + 1) + \
+		print "    conv" + str(2 * i + 1) + "_num_filters=32, conv" + str(2 * i + 1) + \
 			  "_filter_size=(3, 3), conv" + str(2 * i + 1) + "_pad=1, conv" + str(2 * i + 1) + "_W=HeNormal(),"
 
-	print "\n        conv" + str(4*n + 2) + "_stride=2,"
+	print "\n    conv" + str(4*n + 2) + "_stride=2,"
 	for i in range(2*n + 1, 3*n + 1):
-		print "        conv" + str(2 * i) + "_num_filters=64, conv" + str(2 * i) + \
+		print "    conv" + str(2 * i) + "_num_filters=64, conv" + str(2 * i) + \
 			  "_filter_size=(3, 3), conv" + str(2 * i) + "_pad=1, conv" + str(2 * i) + "_W=HeNormal(),"
-		print "        conv" + str(2 * i + 1) + "_num_filters=64, conv" + str(2 * i + 1) + \
+		print "    conv" + str(2 * i + 1) + "_num_filters=64, conv" + str(2 * i + 1) + \
 			  "_filter_size=(3, 3), conv" + str(2 * i + 1) + "_pad=1, conv" + str(2 * i + 1) + "_W=HeNormal(),"
 
-	print "\n        output_num_units=10, output_nonlinearity=softmax,\n\n" + \
-		  "        # Hyperparameters\n" + \
-		  "        batch_iterator_train=nn_utils.FlipBatchIterator(batch_size=128),\n" +\
-		  "        update_learning_rate=theano.shared(utils.float32(0.1)),\n" +\
-		  "        update_momentum=theano.shared(utils.float32(0.9)),\n" +\
-		  "        on_epoch_finished=[\n" +\
-		  "            # nn_utils.AdjustVariable('update_learning_rate', start=0.1, stop=0.1),\n" +\
-		  "            # nn_utils.AdjustVariable('update_momentum', start=0.9, stop=0.9),\n" +\
-		  "            nn_utils.EarlyStopping(patience=30),\n" +\
-		  "        ],\n" +\
-		  "        objective_l2=0.0001," +\
-		  "        max_epochs=10000,\n" +\
-		  "        verbose=1,\n" +\
-		  "        )\n"
+	print "\n    output_num_units=10, output_nonlinearity=softmax,\n\n" + \
+		  "    # Hyperparameters\n" + \
+		  "    batch_iterator_train=nn_utils.FlipBatchIterator(batch_size=128),\n" +\
+		  "    update_learning_rate=theano.shared(utils.float32(0.1)),\n" +\
+		  "    update_momentum=theano.shared(utils.float32(0.9)),\n" +\
+		  "    on_epoch_finished=[\n" +\
+		  "        # nn_utils.AdjustVariable('update_learning_rate', start=0.1, stop=0.1),\n" +\
+		  "        # nn_utils.AdjustVariable('update_momentum', start=0.9, stop=0.9),\n" +\
+		  "        nn_utils.EarlyStopping(patience=30),\n" +\
+		  "    ],\n" +\
+		  "    objective_l2=0.0001,\n" +\
+		  "    max_epochs=10000,\n" +\
+		  "    verbose=1,\n" +\
+		  "    )\n"
 
 	return
 
-# print_resnet_cnn(7)
+# print_resnet_cnn(1)
