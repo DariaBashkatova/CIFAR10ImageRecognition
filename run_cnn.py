@@ -17,7 +17,7 @@ import time
 
 # Initialize variables
 sys.setrecursionlimit(50000)
-FINAL_RUN = False
+FINAL_RUN = True
 training_examples = 50000  # Max = 50000
 
 # X_train = utils.get_X("data/train", training_examples, hog_repr=hog_repr, bins=bins)
@@ -32,9 +32,15 @@ y_train = utils.get_y("data/trainLabels.csv")[range(training_examples)]
 # Create training, validation, and test data sets
 print "Creating Train and Test Sets..."
 if FINAL_RUN:  # When running on Training Data and untouched Test Data!
-	X_test = utils.load2d("data/test", 300000)
-	# utils.dump(X_test, "XTest2d.pickle")
-	y_test = None
+	# X_test = utils.load2d("data/test", 300000)
+
+	# utils.dump(X_test[:X_test.shape[0]/4, :], "XTest2d1.pickle")
+	# utils.dump(X_test[X_test.shape[0]/4:2*X_test.shape[0]/4, :], "XTest2d2.pickle")
+	# utils.dump(X_test[2*X_test.shape[0]/4:3*X_test.shape[0]/4, :], "XTest2d3.pickle")
+	# utils.dump(X_test[3*X_test.shape[0]/4:, :], "XTest2d4.pickle")
+    X_test = np.concatenate((utils.load("XTest2d1.pickle"), utils.load("XTest2d2.pickle"),
+                             utils.load("XTest2d3.pickle"), utils.load("XTest2d4.pickle")))
+    y_test = None
 else:  # When running ONLY on Training Data!
 	X_train, X_test, y_train, y_test = model_selection.train_test_split(X_train, y_train, test_size=0.2, random_state=0)
 
@@ -130,18 +136,6 @@ nn = NeuralNet(
         ('bn36', layers.BatchNormLayer),
         ('conv37', layers.Conv2DLayer),
         ('bn37', layers.BatchNormLayer),
-        ('conv38', layers.Conv2DLayer),
-        ('bn38', layers.BatchNormLayer),
-        ('conv39', layers.Conv2DLayer),
-        ('bn39', layers.BatchNormLayer),
-        ('conv40', layers.Conv2DLayer),
-        ('bn40', layers.BatchNormLayer),
-        ('conv41', layers.Conv2DLayer),
-        ('bn41', layers.BatchNormLayer),
-        ('conv42', layers.Conv2DLayer),
-        ('bn42', layers.BatchNormLayer),
-        ('conv43', layers.Conv2DLayer),
-        ('bn43', layers.BatchNormLayer),
         ('globalpool', layers.GlobalPoolLayer),
         ('output', layers.DenseLayer),
         ],
@@ -160,10 +154,10 @@ nn = NeuralNet(
         conv11_num_filters=16, conv11_filter_size=(3, 3), conv11_pad=1, conv11_W=HeNormal(),
         conv12_num_filters=16, conv12_filter_size=(3, 3), conv12_pad=1, conv12_W=HeNormal(),
         conv13_num_filters=16, conv13_filter_size=(3, 3), conv13_pad=1, conv13_W=HeNormal(),
-        conv14_num_filters=16, conv14_filter_size=(3, 3), conv14_pad=1, conv14_W=HeNormal(),
-        conv15_num_filters=16, conv15_filter_size=(3, 3), conv15_pad=1, conv15_W=HeNormal(),
 
-        conv16_stride=2,
+        conv14_stride=2,
+        conv14_num_filters=32, conv14_filter_size=(3, 3), conv14_pad=1, conv14_W=HeNormal(),
+        conv15_num_filters=32, conv15_filter_size=(3, 3), conv15_pad=1, conv15_W=HeNormal(),
         conv16_num_filters=32, conv16_filter_size=(3, 3), conv16_pad=1, conv16_W=HeNormal(),
         conv17_num_filters=32, conv17_filter_size=(3, 3), conv17_pad=1, conv17_W=HeNormal(),
         conv18_num_filters=32, conv18_filter_size=(3, 3), conv18_pad=1, conv18_W=HeNormal(),
@@ -174,12 +168,12 @@ nn = NeuralNet(
         conv23_num_filters=32, conv23_filter_size=(3, 3), conv23_pad=1, conv23_W=HeNormal(),
         conv24_num_filters=32, conv24_filter_size=(3, 3), conv24_pad=1, conv24_W=HeNormal(),
         conv25_num_filters=32, conv25_filter_size=(3, 3), conv25_pad=1, conv25_W=HeNormal(),
-        conv26_num_filters=32, conv26_filter_size=(3, 3), conv26_pad=1, conv26_W=HeNormal(),
-        conv27_num_filters=32, conv27_filter_size=(3, 3), conv27_pad=1, conv27_W=HeNormal(),
-        conv28_num_filters=32, conv28_filter_size=(3, 3), conv28_pad=1, conv28_W=HeNormal(),
-        conv29_num_filters=32, conv29_filter_size=(3, 3), conv29_pad=1, conv29_W=HeNormal(),
 
-        conv30_stride=2,
+        conv26_stride=2,
+        conv26_num_filters=64, conv26_filter_size=(3, 3), conv26_pad=1, conv26_W=HeNormal(),
+        conv27_num_filters=64, conv27_filter_size=(3, 3), conv27_pad=1, conv27_W=HeNormal(),
+        conv28_num_filters=64, conv28_filter_size=(3, 3), conv28_pad=1, conv28_W=HeNormal(),
+        conv29_num_filters=64, conv29_filter_size=(3, 3), conv29_pad=1, conv29_W=HeNormal(),
         conv30_num_filters=64, conv30_filter_size=(3, 3), conv30_pad=1, conv30_W=HeNormal(),
         conv31_num_filters=64, conv31_filter_size=(3, 3), conv31_pad=1, conv31_W=HeNormal(),
         conv32_num_filters=64, conv32_filter_size=(3, 3), conv32_pad=1, conv32_W=HeNormal(),
@@ -188,12 +182,6 @@ nn = NeuralNet(
         conv35_num_filters=64, conv35_filter_size=(3, 3), conv35_pad=1, conv35_W=HeNormal(),
         conv36_num_filters=64, conv36_filter_size=(3, 3), conv36_pad=1, conv36_W=HeNormal(),
         conv37_num_filters=64, conv37_filter_size=(3, 3), conv37_pad=1, conv37_W=HeNormal(),
-        conv38_num_filters=64, conv38_filter_size=(3, 3), conv38_pad=1, conv38_W=HeNormal(),
-        conv39_num_filters=64, conv39_filter_size=(3, 3), conv39_pad=1, conv39_W=HeNormal(),
-        conv40_num_filters=64, conv40_filter_size=(3, 3), conv40_pad=1, conv40_W=HeNormal(),
-        conv41_num_filters=64, conv41_filter_size=(3, 3), conv41_pad=1, conv41_W=HeNormal(),
-        conv42_num_filters=64, conv42_filter_size=(3, 3), conv42_pad=1, conv42_W=HeNormal(),
-        conv43_num_filters=64, conv43_filter_size=(3, 3), conv43_pad=1, conv43_W=HeNormal(),
 
         output_num_units=10, output_nonlinearity=softmax,
 
@@ -204,17 +192,21 @@ nn = NeuralNet(
         on_epoch_finished=[
             # nn_utils.AdjustVariable('update_learning_rate', start=0.1, stop=0.1),
             # nn_utils.AdjustVariable('update_momentum', start=0.9, stop=0.9),
-            nn_utils.EarlyStopping(patience=30),
+            nn_utils.EarlyStopping(patience=20),
         ],
-		objective_l2=0.0001,
-        max_epochs=10000,
+        objective_l2=0.0001,
+        max_epochs=1000,
         verbose=1,
         )
 
 
 nn.fit(X_train, y_train)
-values = lasagne.layers.get_all_param_values(nn)
-numpy.savez("CNNParams.npz", values)
+
+# print "Loading Model..."
+# nn = utils.load("cnn5_1.pickle")
+
+print "Pickling Model..."
+utils.dump(nn, "cnn6.pickle")
 
 best_y_test_pred = nn.predict(X_test)
 train_pred = nn.predict(X_train)
@@ -231,5 +223,3 @@ if y_test is not None:
 	print "CNN Test Accuracy: ", best_accuracy
 	utils.print_accuracy_report(y_test, best_y_test_pred)
 
-
-utils.dump(nn, "cnn2.pickle")

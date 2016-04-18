@@ -106,11 +106,11 @@ def print_resnet_cnn(n):
 		  "            # nn_utils.AdjustVariable('update_momentum', start=0.9, stop=0.9),\n" +\
 		  "            nn_utils.EarlyStopping(patience=30),\n" +\
 		  "        ],\n" +\
-		  "        objective_l2=0.0001," +\
+		  "        objective_l2=0.0001,\n" +\
 		  "        max_epochs=10000,\n" +\
 		  "        verbose=1,\n" +\
 		  "        )\n"
 
 	return
 
-# print_resnet_cnn(7)
+print_resnet_cnn(6)
