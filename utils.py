@@ -5,6 +5,9 @@ from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import PolynomialFeatures
 from PIL import Image
 import math
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 import random
 from skimage.feature import hog
 from skimage import color
@@ -172,6 +175,12 @@ def print_accuracy_report(y_test, y_test_pred):
 		accuracy_per_class[i] = c_matrix[i, i] / (1.0 * num_data_actual[i])
 	print(c_matrix)
 	print(accuracy_per_class.round(3) * 100)
+	plt.matshow(c_matrix)
+	plt.title('Confusion matrix')
+	plt.colorbar()
+	plt.ylabel('True label')
+	plt.xlabel('Predicted label')
+	plt.show()
 	return
 
 
@@ -207,7 +216,7 @@ def convert_y_to_matrix(y, num_classes=10):
 
 def load2d(filepath, num_pngs):
 	"""
-	Loads in 2d image data into a num_examples x num_channels x num_dim x num_dim matrix
+	Loads in 2d image data into a (num_examples x num_channels x num_dim x num_dim) matrix
 	"""
 	# TODO!
 	print("Reading Raw Data in 2D Form...")
@@ -236,17 +245,7 @@ def float32(k):
 	return np.cast['float32'](k)
 
 
-
-# num_images = 50000
-# print num_images
-# all_representations = get_X("data/train", num_images, all_reps=True)
-# dump(all_representations[0], "X.pickle")
-# dump(all_representations[1], "X_flipped.pickle")
-# dump(all_representations[2], "X_HOG.pickle")
-# dump(all_representations[3], "X_HOG_flipped.pickle")
-
-# all_representations = get_X("data/test", 300000, all_reps=True)
-# dump(all_representations[0], "XTEST.pickle")
-# dump(all_representations[2], "XTEST_HOG.pickle")
-
-# print load2d("data/train", 2)
+# utils.dump(X_test[:X_test.shape[0]/4, :], "XTest2d1.pickle")
+# utils.dump(X_test[X_test.shape[0]/4:2*X_test.shape[0]/4, :], "XTest2d2.pickle")
+# utils.dump(X_test[2*X_test.shape[0]/4:3*X_test.shape[0]/4, :], "XTest2d3.pickle")
+# utils.dump(X_test[3*X_test.shape[0]/4:, :], "XTest2d4.pickle")
