@@ -93,11 +93,11 @@ nn = NeuralNet(
 	verbose=1,
 	)
 
-# read_filename = "cnn2_1-?"
-write_filename = "cnn2_1-?"
+read_filename = "cnn2_1-814"
+write_filename = "cnn2_2-?"
 
-# print "Loading Model!"
-# nn = utils.load(read_filename + ".pickle")
+print "Loading Model!"
+nn = utils.load(read_filename + ".pickle")
 
 nn.fit(X_train, y_train)
 
@@ -113,24 +113,8 @@ print "CNN Train Accuracy: ", train_accuracy
 
 feature_extraction = False
 if feature_extraction:
-	# Feature Extraction using CNN
-	input_var = nn.layers_['input'].input_var
-	global_pool_layer = layers.get_output(nn.layers_['globalpool'], deterministic=True)
-	f_global_pool = theano.function([input_var], global_pool_layer)
-
-	print "Extracting Features for Training Data!"
-	X_train_extracted = np.zeros((X_train.shape[0], 64))
-	for i in range(X_train.shape[0]):
-		X_train_extracted[i] = f_global_pool(X_train[i][None, :, :, :])
-
-	print "Extracting Features for Testing Data!"
-	X_test_extracted = np.zeros((X_test.shape[0], 64))
-	for i in range(X_test.shape[0]):
-		X_test_extracted[i] = f_global_pool(X_test[i][None, :, :, :])
-
-	print "Pickling Data!"
-	utils.dump(X_train_extracted, "X_train_extracted.pickle")
-	utils.dump(X_test_extracted, "X_test_extracted.pickle")
+	nn_utils.feature_extraction_from_nn(nn, "globalpool", X_train, "X_train_extracted1.pickle")
+	nn_utils.feature_extraction_from_nn(nn, "globalpool", X_test, "X_test_extracted1.pickle")
 
 
 print "Printing Final Results to File..."

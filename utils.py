@@ -181,6 +181,7 @@ def print_accuracy_report(y_test, y_test_pred):
 	plt.ylabel('True label')
 	plt.xlabel('Predicted label')
 	plt.show()
+	plt.savefig('ConfusionMatrix')
 	return
 
 

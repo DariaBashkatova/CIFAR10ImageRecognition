@@ -1,6 +1,8 @@
+from lasagne import layers
 from nolearn.lasagne import BatchIterator
 import numpy as np
 import utils
+import theano
 
 class FlipBatchIterator(BatchIterator):
 	"""
@@ -29,7 +31,7 @@ class AdjustVariable(object):
 		self.name = name
 		self.start, self.stop = start, stop
 		self.ls = None
-		self.weight_decay = 'exp'
+		self.weight_decay = weight_decay
 
 	def __call__(self, nn, train_history):
 		if self.ls is None:
@@ -130,4 +132,30 @@ def print_resnet_cnn(n):
 		  "    )\n"
 
 	return
+
+def feature_extraction_from_nn(nn, hidden_layer_name, X, filename=None):
+	"""
+	Return and, if specified, pickle the hidden layer output of a neural network
+	over all the training data, as a method of feature extraction
+	"""
+	# Set up hidden layer outputting
+	input_var = nn.layers_['input'].input_var
+	hidden_layer = layers.get_output(nn.layers_[hidden_layer_name], deterministic=True)
+	f_hidden = theano.function([input_var], hidden_layer)
+
+	# Transform the data, example by example
+	Xtracted = np.zeros((X.shape[0], layers.get_output_shape(nn.layers_[hidden_layer_name])[1]))  # only outputs 2d matrix
+	for i in range(X.shape[0]):
+		if len(X.shape) == 2:
+			Xtracted[i] = f_hidden(X[i][None, :])
+		elif len(X.shape) == 3:
+			Xtracted[i] = f_hidden(X[i][None, :, :])
+		elif len(X.shape) == 4:
+			Xtracted[i] = f_hidden(X[i][None, :, :, :])
+
+
+	if filename is not None:
+		utils.dump(Xtracted, filename)
+
+	return Xtracted
 
