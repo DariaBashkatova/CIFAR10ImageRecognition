@@ -18,12 +18,15 @@ import time
 
 # Initialize variables
 sys.setrecursionlimit(50000)
-FINAL_RUN = True
+FINAL_RUN = False
 training_examples = 50000  # Max = 50000
 
 X_train = utils.load("X2d.pickle")
 y_train = utils.get_y("data/trainLabels.csv")[range(training_examples)]
-
+if FINAL_RUN:
+	print "FINAL RUN!"
+else:
+	print "TEST RUN!"
 
 # Create training, validation, and test data sets
 print "Creating Train and Test Sets..."
@@ -49,60 +52,61 @@ if y_test is not None:
 
 # Train and Test Model
 print "Training CNN..."
-nn = NeuralNet(
-	layers=[
-		('input', layers.InputLayer),
-		('conv1', layers.Conv2DLayer),
-		('bn1', layers.BatchNormLayer),
-		('conv2', layers.Conv2DLayer),
-		('bn2', layers.BatchNormLayer),
-		('conv3', layers.Conv2DLayer),
-		('bn3', layers.BatchNormLayer),
-		('conv4', layers.Conv2DLayer),
-		('bn4', layers.BatchNormLayer),
-		('conv5', layers.Conv2DLayer),
-		('bn5', layers.BatchNormLayer),
-		('conv6', layers.Conv2DLayer),
-		('bn6', layers.BatchNormLayer),
-		('conv7', layers.Conv2DLayer),
-		('bn7', layers.BatchNormLayer),
-		('globalpool', layers.GlobalPoolLayer),
-		('output', layers.DenseLayer),
-		],
+# nn = NeuralNet(
+# 	layers=[
+# 		('input', layers.InputLayer),
+# 		('conv1', layers.Conv2DLayer),
+# 		('bn1', layers.BatchNormLayer),
+# 		('conv2', layers.Conv2DLayer),
+# 		('bn2', layers.BatchNormLayer),
+# 		('conv3', layers.Conv2DLayer),
+# 		('bn3', layers.BatchNormLayer),
+# 		('conv4', layers.Conv2DLayer),
+# 		('bn4', layers.BatchNormLayer),
+# 		('conv5', layers.Conv2DLayer),
+# 		('bn5', layers.BatchNormLayer),
+# 		('conv6', layers.Conv2DLayer),
+# 		('bn6', layers.BatchNormLayer),
+# 		('conv7', layers.Conv2DLayer),
+# 		('bn7', layers.BatchNormLayer),
+# 		('globalpool', layers.GlobalPoolLayer),
+# 		('output', layers.DenseLayer),
+# 		],
+#
+# 	input_shape=(None, 3, 32, 32),
+# 	conv1_num_filters=16, conv1_filter_size=(3, 3), conv1_pad=1, conv1_W=HeNormal(),
+# 	conv2_num_filters=16, conv2_filter_size=(3, 3), conv2_pad=1, conv2_W=HeNormal(),
+# 	conv3_num_filters=16, conv3_filter_size=(3, 3), conv3_pad=1, conv3_W=HeNormal(),
+#
+# 	conv4_stride=2,
+# 	conv4_num_filters=32, conv4_filter_size=(3, 3), conv4_pad=1, conv4_W=HeNormal(),
+# 	conv5_num_filters=32, conv5_filter_size=(3, 3), conv5_pad=1, conv5_W=HeNormal(),
+#
+# 	conv6_stride=2,
+# 	conv6_num_filters=64, conv6_filter_size=(3, 3), conv6_pad=1, conv6_W=HeNormal(),
+# 	conv7_num_filters=64, conv7_filter_size=(3, 3), conv7_pad=1, conv7_W=HeNormal(),
+#
+# 	output_num_units=10, output_nonlinearity=softmax,
+#
+# 	batch_iterator_train=nn_utils.FlipBatchIterator(batch_size=128),
+# 	update_learning_rate=theano.shared(utils.float32(0.1)),
+# 	update_momentum=theano.shared(utils.float32(0.9)),
+# 	objective_l2=0.0001,
+# 	max_epochs=32000,
+# 	verbose=1,
+# 	)
 
-	input_shape=(None, 3, 32, 32),
-	conv1_num_filters=16, conv1_filter_size=(3, 3), conv1_pad=1, conv1_W=HeNormal(),
-	conv2_num_filters=16, conv2_filter_size=(3, 3), conv2_pad=1, conv2_W=HeNormal(),
-	conv3_num_filters=16, conv3_filter_size=(3, 3), conv3_pad=1, conv3_W=HeNormal(),
-
-	conv4_stride=2,
-	conv4_num_filters=32, conv4_filter_size=(3, 3), conv4_pad=1, conv4_W=HeNormal(),
-	conv5_num_filters=32, conv5_filter_size=(3, 3), conv5_pad=1, conv5_W=HeNormal(),
-
-	conv6_stride=2,
-	conv6_num_filters=64, conv6_filter_size=(3, 3), conv6_pad=1, conv6_W=HeNormal(),
-	conv7_num_filters=64, conv7_filter_size=(3, 3), conv7_pad=1, conv7_W=HeNormal(),
-
-	output_num_units=10, output_nonlinearity=softmax,
-
-	batch_iterator_train=nn_utils.FlipBatchIterator(batch_size=128),
-	update_learning_rate=theano.shared(utils.float32(0.1)),
-	update_momentum=theano.shared(utils.float32(0.9)),
-	objective_l2=0.0001,
-	max_epochs=32000,
-	verbose=1,
-	)
-
-read_filename = "cnn2_1-814"
-write_filename = "cnn2_2-?"
+read_filename = "cnn2_3-826"
+write_filename = "cnn2_4-?"
 
 print "Loading Model!"
 nn = utils.load(read_filename + ".pickle")
+visualize.plot_conv_weights(nn.layers_['conv1'])
 
-nn.fit(X_train, y_train)
+# nn.fit(X_train, y_train)
 
-print "Pickling Model..."
-utils.dump(nn, write_filename + ".pickle")
+# print "Pickling Model..."
+# utils.dump(nn, write_filename + ".pickle")
 
 print "Predicting on Train and Test Sets!"
 best_y_test_pred = nn.predict(X_test)
@@ -113,8 +117,8 @@ print "CNN Train Accuracy: ", train_accuracy
 
 feature_extraction = False
 if feature_extraction:
-	nn_utils.feature_extraction_from_nn(nn, "globalpool", X_train, "X_train_extracted1.pickle")
-	nn_utils.feature_extraction_from_nn(nn, "globalpool", X_test, "X_test_extracted1.pickle")
+	nn_utils.feature_extraction_from_nn(nn, "globalpool", X_train, "X_train_extracted3.pickle")
+	nn_utils.feature_extraction_from_nn(nn, "globalpool", X_test, "X_test_extracted3.pickle")
 
 
 print "Printing Final Results to File..."
