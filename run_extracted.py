@@ -18,18 +18,18 @@ import theano
 
 # Initialize variables
 FINAL_RUN = True
-model_type = "NN"  # Supports NB, DT, SVM, NN
+model_type = "SVM"  # Supports NB, DT, SVM, NN
 print model_type
 
 # X_train = utils.get_X("data/train", 50000, bins=bins)
-X_train = utils.load("X_train_extracted.pickle")
+X_train = np.concatenate((utils.load("X_train_extracted1.pickle"), utils.load("X_train_extracted2.pickle")), axis=1)
 y_train = utils.get_y("data/trainLabels.csv")
 
 # Create training, validation, and test data sets
 print "Creating Train and Test Sets..."
 if FINAL_RUN:  # When running on Training Data and untouched Test Data!
 	# X_test = utils.get_X("data/test", 300000)
-	X_test = utils.load("X_test_extracted.pickle")
+	X_test = np.concatenate((utils.load("X_test_extracted1.pickle"), utils.load("X_test_extracted2.pickle")), axis=1)
 	y_test = None
 else:  # When running ONLY on Training Data!
 	X_train, X_test, y_train, y_test = model_selection.train_test_split(X_train, y_train, test_size=0.2)
