@@ -1,12 +1,11 @@
 import numpy as np
-import nn_utils
 import utils
 import random
 from lasagne import layers
 from lasagne.init import HeNormal
 from lasagne.nonlinearities import softmax
-from nolearn.lasagne import NeuralNet
 from sklearn import model_selection
+from sklearn.cluster import KMeans
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neural_network import MLPClassifier
 from sklearn import svm
@@ -17,22 +16,24 @@ import theano
 
 
 # Initialize variables
-FINAL_RUN = True
+FINAL_RUN = False
 model_type = "SVM"  # Supports NB, DT, SVM, NN
 print model_type
 
 # X_train = utils.get_X("data/train", 50000, bins=bins)
-X_train = np.concatenate((utils.load("X_train_extracted1.pickle"), utils.load("X_train_extracted2.pickle")), axis=1)
+# X_train = np.concatenate((utils.load("X_train_extracted1.pickle"), utils.load("X_train_extracted2.pickle")), axis=1)
+X_train = utils.load("X_train_extracted.pickle")
 y_train = utils.get_y("data/trainLabels.csv")
 
 # Create training, validation, and test data sets
 print "Creating Train and Test Sets..."
 if FINAL_RUN:  # When running on Training Data and untouched Test Data!
 	# X_test = utils.get_X("data/test", 300000)
-	X_test = np.concatenate((utils.load("X_test_extracted1.pickle"), utils.load("X_test_extracted2.pickle")), axis=1)
+	# X_test = np.concatenate((utils.load("X_test_extracted1.pickle"), utils.load("X_test_extracted2.pickle")), axis=1)
+	X_test = utils.load("X_test_extracted.pickle")
 	y_test = None
 else:  # When running ONLY on Training Data!
-	X_train, X_test, y_train, y_test = model_selection.train_test_split(X_train, y_train, test_size=0.2)
+	X_train, X_test, y_train, y_test = model_selection.train_test_split(X_train, y_train, test_size=0.2, random_state=0)
 
 
 # Train, Predict, and Store Results with Model!
@@ -54,8 +55,11 @@ elif model_type == "DT":
 	best_y_test_pred = stats.mode(y_test_pred_matrix, axis=1)[0][:, 0]
 
 elif model_type == "SVM":
-	svm_model = svm.SVC()
+	# svm_model = svm.LinearSVC()
+	svm_model = SVC(C=0.1)
 	best_y_test_pred = svm_model.fit(X_train, y_train).predict(X_test)
+	np.mean(svm_model.predict(X_train) == y_train)
+
 
 elif model_type == "NN":
 	X_train = X_train.astype('float32')  # need this cast to use GPU
@@ -76,43 +80,43 @@ elif model_type == "NN":
 		hidden_layer_sizes = [58, 57, 50, 50, 48]
 		print hidden_layer_sizes
 
-		# nn = MLPClassifier(
-		# 		activation='relu', algorithm='adam', alpha=alpha, batch_size='auto', beta_1=0.9, beta_2=0.999,
-		# 		early_stopping=False, epsilon=1e-08, hidden_layer_sizes=hidden_layer_sizes, learning_rate='constant',
-		# 		learning_rate_init=1e-3, max_iter=200, momentum=0.9, nesterovs_momentum=True, power_t=0.5,
-		# 		random_state=1, shuffle=True, tol=0.0001, validation_fraction=0.1, verbose=True, warm_start=False)
+		nn = MLPClassifier(
+				activation='relu', algorithm='adam', alpha=alpha, batch_size='auto', beta_1=0.9, beta_2=0.999,
+				early_stopping=False, epsilon=1e-08, hidden_layer_sizes=hidden_layer_sizes, learning_rate='constant',
+				learning_rate_init=1e-3, max_iter=200, momentum=0.9, nesterovs_momentum=True, power_t=0.5,
+				random_state=1, shuffle=True, tol=0.0001, validation_fraction=0.1, verbose=True, warm_start=False)
 
-		nn = NeuralNet(
-			layers=[
-				('input', layers.InputLayer),
-				('hidden1', layers.DenseLayer),
-				('bn1', layers.BatchNormLayer),
-				('hidden2', layers.DenseLayer),
-				('bn2', layers.BatchNormLayer),
-				('hidden3', layers.DenseLayer),
-				('bn3', layers.BatchNormLayer),
-				('hidden4', layers.DenseLayer),
-				('bn4', layers.BatchNormLayer),
-				('hidden5', layers.DenseLayer),
-				('bn5', layers.BatchNormLayer),
-				('output', layers.DenseLayer),
-			],
-
-			input_shape=(None, 64),
-			hidden1_num_units=hidden_layer_sizes[0], hidden1_W=HeNormal(),
-			hidden2_num_units=hidden_layer_sizes[1], hidden2_W=HeNormal(),
-			hidden3_num_units=hidden_layer_sizes[2], hidden3_W=HeNormal(),
-			hidden4_num_units=hidden_layer_sizes[3], hidden4_W=HeNormal(),
-			hidden5_num_units=hidden_layer_sizes[4], hidden5_W=HeNormal(),
-			output_num_units=10, output_nonlinearity=softmax,
-
-			on_epoch_finished=[nn_utils.EarlyStopping(patience=5)],
-			update_learning_rate=theano.shared(utils.float32(0.1)),
-			update_momentum=theano.shared(utils.float32(0.9)),
-			objective_l2=0.0003,
-			max_epochs=1000,
-			verbose=1,
-		)
+		# nn = NeuralNet(
+		# 	layers=[
+		# 		('input', layers.InputLayer),
+		# 		('hidden1', layers.DenseLayer),
+		# 		('bn1', layers.BatchNormLayer),
+		# 		('hidden2', layers.DenseLayer),
+		# 		('bn2', layers.BatchNormLayer),
+		# 		('hidden3', layers.DenseLayer),
+		# 		('bn3', layers.BatchNormLayer),
+		# 		('hidden4', layers.DenseLayer),
+		# 		('bn4', layers.BatchNormLayer),
+		# 		('hidden5', layers.DenseLayer),
+		# 		('bn5', layers.BatchNormLayer),
+		# 		('output', layers.DenseLayer),
+		# 	],
+		#
+		# 	input_shape=(None, 64),
+		# 	hidden1_num_units=hidden_layer_sizes[0], hidden1_W=HeNormal(),
+		# 	hidden2_num_units=hidden_layer_sizes[1], hidden2_W=HeNormal(),
+		# 	hidden3_num_units=hidden_layer_sizes[2], hidden3_W=HeNormal(),
+		# 	hidden4_num_units=hidden_layer_sizes[3], hidden4_W=HeNormal(),
+		# 	hidden5_num_units=hidden_layer_sizes[4], hidden5_W=HeNormal(),
+		# 	output_num_units=10, output_nonlinearity=softmax,
+		#
+		# 	on_epoch_finished=[nn_utils.EarlyStopping(patience=5)],
+		# 	update_learning_rate=theano.shared(utils.float32(0.1)),
+		# 	update_momentum=theano.shared(utils.float32(0.9)),
+		# 	objective_l2=0.0003,
+		# 	max_epochs=1000,
+		# 	verbose=1,
+		# )
 
 		nn.fit(X_train, y_train)
 
