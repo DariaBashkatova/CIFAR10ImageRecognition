@@ -25,7 +25,10 @@ def affine_forward(x, theta, theta_0):
   # will need to reshape the input into rows.                                 #
   #############################################################################
   # 2 lines of code expected
-
+  if theta_0 is None:
+    print "THETA_0"
+  if theta is None:
+    print "THETA"
   xr = x.reshape(x.shape[0], theta.shape[0])
   out = xr.dot(theta) + theta_0
 
