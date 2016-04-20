@@ -732,14 +732,14 @@ from vis_utils import show_net_weights
 # set up a model, train it and then visualize the first level weights
 # you will need to play wih these parameters to get > 50% on validation set
 
-# model = fc_net.FullyConnectedNet()
+model = fc_net.FullyConnectedNet([1638, 838, 209, 59], weight_scale=1e-2)
 
-# asolver = solver.Solver(model, data,
-#                  num_epochs=5, batch_size=100,
-#                  update_rule='adam',
-#                  optim_config={
-#                    'learning_rate': 1e-3,
-#                  },
-#                  verbose=True)
-# asolver.train()
-# show_net_weights(model)
+asolver = solver.Solver(model, data,
+                 num_epochs=10, batch_size=200,
+                 update_rule='adam',
+                 optim_config={
+                   'learning_rate': 1e-3,
+                 },
+                 verbose=True)
+asolver.train()
+show_net_weights(model)
