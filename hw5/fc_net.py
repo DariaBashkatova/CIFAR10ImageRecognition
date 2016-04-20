@@ -45,12 +45,8 @@ class TwoLayerNet(object):
     # layer weights and biases using the keys 'theta2' and 'theta2_0'.         #
     ############################################################################
     # 4 lines of code expected
-    # self.params['theta1_0'] = np.random.normal(0, weight_scale, hidden_dim)  # Make this a length 1 vector instead?
-    # self.params['theta2_0'] = np.random.normal(0, weight_scale, num_classes)  # Make this a length 1 vector instead?
-    # self.params['theta1'] = np.random.normal(0, weight_scale, input_dim * hidden_dim)
-    # self.params['theta2'] = np.random.normal(0, weight_scale, hidden_dim * num_classes)
-    self.params['theta1_0'] = np.zeros(hidden_dim)  # Make this a length 1 vector instead?
-    self.params['theta2_0'] = np.zeros(num_classes)  # Make this a length 1 vector instead?
+    self.params['theta1_0'] = np.zeros(hidden_dim)
+    self.params['theta2_0'] = np.zeros(num_classes)
     self.params['theta1'] = weight_scale * np.random.randn(input_dim, hidden_dim)
     self.params['theta2'] = weight_scale * np.random.randn(hidden_dim, num_classes)
 
@@ -87,7 +83,7 @@ class TwoLayerNet(object):
     # 3 lines of code expected
     out1, cache1 = affine_relu_forward(X, self.params['theta1'], self.params['theta1_0'])
     fc_cache1, relu_cache1 = cache1
-    output, fc_cache2 = affine_forward(relu_cache1, self.params['theta2'], self.params['theta2_0'])
+    output, fc_cache2 = affine_forward(out1, self.params['theta2'], self.params['theta2_0'])
 
     ############################################################################
     #                             END OF YOUR CODE                             #
@@ -114,8 +110,8 @@ class TwoLayerNet(object):
     dx1, grads['theta1'], grads['theta1_0'] = affine_relu_backward(dx2, cache1)
 
     # Add Regularization
-    grads['theta2'] = self.reg * self.params['theta2']
-    grads['theta1'] = self.reg * self.params['theta1']
+    grads['theta2'] += self.reg * self.params['theta2']
+    grads['theta1'] += self.reg * self.params['theta1']
     loss += (self.reg / 2.0) * np.sum(self.params['theta2'] ** 2)
     loss += (self.reg / 2.0) * np.sum(self.params['theta1'] ** 2)
 
@@ -175,7 +171,21 @@ class FullyConnectedNet(object):
     ############################################################################
     # 7 lines of code expected
 
-    pass
+    self.params['theta1'] = weight_scale * np.random.randn(input_dim, hidden_dims[0])
+    self.params['theta1_0'] = np.zeros(hidden_dims[0])
+
+    for i in range(2, len(hidden_dims) + 1):
+      self.params['theta' + str(i)] = weight_scale * np.random.randn(hidden_dims[i-2], hidden_dims[i-1])
+      self.params['theta' + str(i) + '_0'] = np.zeros(hidden_dims[i-1])
+
+    self.params['theta' + str(len(hidden_dims) + 1)] = weight_scale * np.random.randn(hidden_dims[-1], num_classes)
+    self.params['theta' + str(len(hidden_dims) + 1) + '_0'] = np.zeros(num_classes)
+
+    i=1
+    if self.params['theta' + str(i)] is None:
+      print "THETA1 is NONE in INIT"
+    if self.params['theta' + str(i) + "_0"] is None:
+      print "THETA1_0 is NONE in INIT"
     ############################################################################
     #                             END OF YOUR CODE                             #
     ############################################################################
@@ -202,7 +212,24 @@ class FullyConnectedNet(object):
     ############################################################################
     # 6 lines of code expected.
 
-    pass
+    # out1, cache1 = affine_relu_forward(X, self.params['theta1'], self.params['theta1_0'])
+    # fc_cache1, relu_cache1 = cache1
+    # output, fc_cache2 = affine_forward(out1, self.params['theta2'], self.params['theta2_0'])
+
+    prev_layer = X.copy()
+    caches = {}
+    i=1
+    if self.params['theta' + str(i)] is None:
+      print "THETA1 is NONE in LOSS"
+    if self.params['theta' + str(i) + "_0"] is None:
+      print "THETA1_0 is NONE in LOSS"
+
+    # print self.params['theta' + str(i) + '_0']
+    for i in range(1, self.num_layers):
+      prev_layer, cache = affine_relu_forward(prev_layer, self.params['theta' + str(i)], self.params['theta' + str(i) + '_0'])
+      caches[i] = cache
+    output, caches[self.num_layers] = affine_forward(prev_layer, self.params['theta' + str(self.num_layers)], self.params['theta' + str(self.num_layers) + '_0'])
+
     ############################################################################
     #                             END OF YOUR CODE                             #
     ############################################################################
@@ -223,11 +250,29 @@ class FullyConnectedNet(object):
     # automated tests, make sure that your L2 regularization includes a factor #
     # of 0.5 to simplify the expression for the gradient.                      #
     ############################################################################
-    # 10-12 lines of code expected
+    # 10-12 lines of code expected]
+
+    # loss, dout = softmax_loss(output, y)
+    # dx2, grads['theta2'], grads['theta2_0'] = affine_backward(dout, fc_cache2)
+    # dx1, grads['theta1'], grads['theta1_0'] = affine_relu_backward(dx2, cache1)
+    #
+    # # Add Regularization
+    # grads['theta2'] += self.reg * self.params['theta2']
+    # grads['theta1'] += self.reg * self.params['theta1']
+    # loss += (self.reg / 2.0) * np.sum(self.params['theta2'] ** 2)
+    # loss += (self.reg / 2.0) * np.sum(self.params['theta1'] ** 2)
 
 
+    loss, dout = softmax_loss(output, y)
+    dx = {}
+    dx[self.num_layers], grads['theta' + str(self.num_layers)], grads['theta' + str(self.num_layers) + '_0'] = affine_backward(dout, caches[self.num_layers])
+    for i in range(self.num_layers-1, 0, -1):
+      dx[i], grads['theta' + str(i)], grads['theta' + str(i) + '_0'] = affine_relu_backward(dx[i+1], caches[i])
 
-    pass
+    for i in range(1, self.num_layers + 1):
+      grads['theta' + str(i)] += self.reg * self.params['theta' + str(i)]
+      loss += (self.reg / 2.0) * np.sum(self.params['theta' + str(i)] ** 2)
+
     ############################################################################
     #                             END OF YOUR CODE                             #
     ############################################################################

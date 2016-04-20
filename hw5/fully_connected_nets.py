@@ -303,22 +303,22 @@ sgd_solver = None
 # 50% accuracy on the validation set.                                             #
 ###################################################################################
 
-hidden_dim = 100
-reg = 1.0
-print "TRAINING TWO LAYER NET"
-print hidden_dim, reg
-model = fc_net.TwoLayerNet(hidden_dim=hidden_dim, reg=reg)
-solver = solver.Solver(model, data,
-                update_rule='sgd',
-                optim_config={
-                  'learning_rate': 1e-3,
-                },
-                lr_decay=0.9,
-                num_epochs=10, batch_size=100,
-                print_every=100)
-solver.train()
-
-print "DONE TRAINING TWO LAYER NET"
+# hidden_dim = 100
+# reg = 0.0
+# print "TRAINING TWO LAYER NET"
+# print hidden_dim, reg
+# model = fc_net.TwoLayerNet(hidden_dim=hidden_dim, reg=reg)
+# solver = solver.Solver(model, data,
+#                 update_rule='sgd',
+#                 optim_config={
+#                   'learning_rate': 1e-3,
+#                 },
+#                 lr_decay=0.95,
+#                 num_epochs=10, batch_size=100,
+#                 print_every=100)
+# solver.train()
+#
+# print "DONE TRAINING TWO LAYER NET"
 
 ##################################################################################
 #                             END OF YOUR CODE                                   #
@@ -398,9 +398,9 @@ small_data = {
 }
 
 # TODO: tweak the values of these two parameters
-
+print "HYPERPARAM SELECTION"
 weight_scale = 1e-2
-learning_rate = 1e-4
+learning_rate = 7e-3
 
 model = fc_net.FullyConnectedNet([100, 100],
               weight_scale=weight_scale, dtype=np.float64)
@@ -421,6 +421,7 @@ if model.params != {}:
   plt.ylabel('Training loss')
   plt.show()
 
+print "END HYPERPARAM SELECTION"
 # Problem 3.1.9
 ###################################################################################
 # TODO: Use a five-layer Net to overfit 50 training examples.                     #
@@ -429,7 +430,7 @@ if model.params != {}:
 # learning rate and weight initialization, but you should be able to              #
 # achieve 100% training accuracy within 20 epochs.                                #
 ###################################################################################
-
+print "****************************"
 num_train = 50
 small_data = {
   'X_train': data['X_train'][:num_train],
@@ -439,9 +440,8 @@ small_data = {
 }
 
 
-learning_rate = 1e-3
-weight_scale = 1e-5
-
+learning_rate = 1e-6  #1e-3
+weight_scale = 1e0  #1e-5
 
 model = fc_net.FullyConnectedNet([100, 100, 100, 100],
                 weight_scale=weight_scale, dtype=np.float64)
@@ -455,13 +455,14 @@ if model.params != {}:
                 }
          )
   sgd_solver.train()
+  print "HI", learning_rate, weight_scale
 
   plt.plot(sgd_solver.loss_history, '-o')
   plt.title('Training loss history')
   plt.xlabel('Iteration')
   plt.ylabel('Training loss')
   plt.show()
-
+print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
 ###################################################################################
 #  Update rules                                                                   #
@@ -504,7 +505,7 @@ expected_velocity = np.asarray([
   [ 0.68217895,  0.69633684,  0.71049474,  0.72465263,  0.73881053],
   [ 0.75296842,  0.76712632,  0.78128421,  0.79544211,  0.8096    ]])
 
-if next_theta:
+if next_theta is not None:
   print 'next_theta error: ', rel_error(next_theta, expected_next_theta)
   print 'velocity error: ', rel_error(expected_velocity, config['velocity'])
 
@@ -601,7 +602,7 @@ expected_cache = np.asarray([
   [ 0.75037008,  0.7659518,   0.78158892,  0.79728144,  0.81302936],
   [ 0.82883269,  0.84469141,  0.86060554,  0.87657507,  0.8926    ]])
 
-if next_theta:
+if next_theta is not None:
   print 'next_theta error: ', rel_error(expected_next_theta, next_theta)
   print 'cache error: ', rel_error(expected_cache, config['cache'])
 
