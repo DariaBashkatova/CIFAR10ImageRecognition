@@ -150,18 +150,46 @@ def conv_forward_naive(x, theta, theta0, conv_param):
     W' = 1 + (W + 2 * pad - WW) / stride
   - cache: (x, theta, theta0, conv_param)
   """
+
   out = None
   #############################################################################
   # TODO: Implement the convolutional forward pass.                           #
   # Hint: you can use the function np.pad for padding.                        #
   #############################################################################
   # 14 lines of code expected
-
+  m = x.shape[0]
+  K = theta.shape[0]
+  C = x.shape[1]
+  P = conv_param['pad']
+  S = conv_param['stride']
+  HH = theta.shape[2]
+  WW = theta.shape[3]
+  H_prime = 1 + (x.shape[2] + 2 * P - HH) / S
+  W_prime = 1 + (x.shape[3] + 2 * P - WW) / S
+  out = np.zeros([m, K, H_prime, W_prime])
+  for example_index in xrange(m):
+    example = x[example_index]
+    for filter_index in xrange(K):
+      # print "filter", filter_index
+      filter = theta[filter_index]
+      out[example_index][filter_index] += theta0[filter_index]
+      for channel in xrange(C):
+        # print "channel", channel
+        example_channel = np.lib.pad(example[channel], ((P, P), (P, P)), 'constant')
+        filter_channel = filter[channel].reshape(WW * HH)
+        for i in xrange(H_prime):
+          for j in xrange(W_prime):
+            # print "i, j", i, j
+            window = example_channel[i * S: i * S + HH, j * S : j * S + WW]
+            window_vec = window.reshape(HH * WW)
+            out[example_index][filter_index][i][j] += filter_channel.dot(window_vec)
   pass
+
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
   cache = (x, theta, theta0, conv_param)
+  # print out
   return out, cache
 
 
@@ -170,19 +198,51 @@ def conv_backward_naive(dout, cache):
   A naive implementation of the backward pass for a convolutional layer.
 
   Inputs:
-  - dout: Upstream derivatives.
+  - dout: Upstream derivatives. (m, K, H', W')
   - cache: A tuple of (x, w, b, conv_param) as in conv_forward_naive
 
   Returns a tuple of:
-  - dx: Gradient with respect to x
-  - dtheta: Gradient with respect to theta
-  - dtheta0: Gradient with respect to theta0
+  - dx: Gradient with respect to x (m, C, H, W)
+  - dtheta: Gradient with respect to theta (K, C, HH, WW)
+  - dtheta0: Gradient with respect to theta0 (K)
   """
   dx, dtheta, dtheta0 = None, None, None
   #############################################################################
   # TODO: Implement the convolutional backward pass.                          #
   #############################################################################
   # 20-22 lines of code expected
+  x = cache[0]
+  theta = cache[1]
+  m = dout.shape[0]
+  K = dout.shape[1]
+  H_prime = dout.shape[2]
+  W_prime = dout.shape[3]
+  C = x.shape[1]
+  H = x.shape[2]
+  W = x.shape[3]
+  HH = theta.shape[2]
+  WW = theta.shape[3]
+  S = cache[3]['stride']
+  P = cache[3]['pad']
+  dxtemp = np.zeros([m, C, H+2*P, W+2*P])
+  dtheta0 = np.zeros(K)
+  dtheta = np.zeros([K, C, HH, WW])
+  for example_index in xrange(m):
+    example = x[example_index]
+    for filter_index in xrange(K):
+      for channel in xrange(C):
+        example_channel = np.lib.pad(example[channel], ((P, P), (P, P)), 'constant')
+        for i in xrange(H_prime):
+          for j in xrange(W_prime):
+            if channel == 0:
+              dtheta0[filter_index] += dout[example_index][filter_index][i][j]
+            for a in xrange(HH):
+              for b in xrange(WW):
+                dtheta[filter_index][channel][a][b] += example_channel[i * S + a][j * S + b] * dout[example_index][filter_index][i][j]
+                dxtemp[example_index][channel][i * S + a][j * S + b] += theta[filter_index][channel][a][b] * dout[example_index][filter_index][i][j]
+  dx = dxtemp[:, :, P:H+P, P:W+P]
+
+
 
 
   #############################################################################
@@ -211,7 +271,21 @@ def max_pool_forward_naive(x, pool_param):
   # TODO: Implement the max pooling forward pass                              #
   #############################################################################
   # 12-13 lines of code expected
-
+  m = x.shape[0]
+  C = x.shape[1]
+  H = x.shape[2]
+  W = x.shape[3]
+  Fh = pool_param['pool_height']
+  Fw = pool_param['pool_width']
+  S = pool_param['stride']
+  H2 = 1 + (H - Fh)/S
+  W2 = 1 + (W - Fw)/S
+  out = np.zeros([m, C, H2, W2])
+  for example_index in xrange(m):
+    for channel_index in xrange(C):
+      for i in xrange(H2):
+        for j in xrange(W2):
+          out[example_index][channel_index][i][j] = np.max(x[example_index][channel_index][i*S:i*S + Fh, j*S:j*S + Fw])
   pass
   #############################################################################
   #                             END OF YOUR CODE                              #
@@ -236,6 +310,26 @@ def max_pool_backward_naive(dout, cache):
   # TODO: Implement the max pooling backward pass                             #
   #############################################################################
   # 15 lines of code expected
+  x = cache[0]
+  pool_param = cache[1]
+  m = x.shape[0]
+  C = x.shape[1]
+  H = x.shape[2]
+  W = x.shape[3]
+  Fh = pool_param['pool_height']
+  Fw = pool_param['pool_width']
+  S = pool_param['stride']
+  H2 = 1 + (H - Fh)/S
+  W2 = 1 + (W - Fw)/S
+  dx = np.zeros([m, C, H, W])
+  for example_index in xrange(m):
+    for channel_index in xrange(C):
+      for i in xrange(H2):
+        for j in xrange(W2):
+          (maxH2, maxW2) = np.unravel_index(x[example_index][channel_index][i*S:i*S + Fh, j*S:j*S + Fw].argmax(), x[example_index][channel_index][i*S:i*S + Fh, j*S:j*S + Fw].shape)
+          maxH = maxH2 + i*S
+          maxW = maxW2 + j*S
+          dx[example_index][channel_index][maxH][maxW] += dout[example_index][channel_index][i][j]
 
   pass
   #############################################################################
