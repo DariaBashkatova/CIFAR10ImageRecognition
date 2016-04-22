@@ -10,17 +10,17 @@ FINAL_RUN = False
 hog_repr = False
 training_examples = 50000  # Max = 50000
 
-X_train = utils.load("X_HOG_flipped.pickle")
-# X_train = utils.get_X("data/train", training_examples, hog_repr=hog_repr)
+X_train = utils.get_X("data/train", training_examples, hog_repr=hog_repr)
 y_train = utils.get_y("data/trainLabels.csv")[range(training_examples)]
 
 # Create training, validation, and test data sets
 print "Creating Train and Test Sets..."
 if FINAL_RUN:  # When running on Training Data and untouched Test Data!
-	X_test = utils.get_X("data/test", 300000, hog_repr=hog_repr, bins=bins)
+	X_test = utils.get_X("data/test", 300000, hog_repr=hog_repr)
 	y_test = None
 else:  # When running ONLY on Training Data!
 	X_train, X_test, y_train, y_test = model_selection.train_test_split(X_train, y_train, test_size=0.2, random_state=0)
+
 
 if hog_repr:
 	print "Preprocessing Data..."
@@ -28,6 +28,7 @@ if hog_repr:
 	scaler = preprocessing.StandardScaler().fit(X_train)
 	X_train = poly.fit_transform(scaler.transform(X_train))
 	X_test = poly.fit_transform(scaler.transform(X_test))
+
 
 # Train, Predict, and Store Results with Neural Network Model!
 print "Selecting Hyperparameters..."
@@ -68,9 +69,8 @@ for i in range(num_iters):
 print "Training Voting System..."
 # hidden_layer_sizes_list = [[1582], [2413], [1646], [1578, 45], [911, 46], [1664, 53], [2528, 110], [255]]
 # hidden_layer_sizes_list = [[103], [255], [599]]
-# hyperparams_list = [([1638, 838, 209, 59], 0.03), ([2371, 1324, 288, 92], 0.01), ([2371, 1324, 288, 92], 0.1),
-# 					([1679, 1270, 71], 0.00001), ([1508, 1330, 79, 15], 0.00001)]
-hyperparams_list = [([1679, 1270, 71], 0.00001)]
+hyperparams_list = [([1638, 838, 209, 59], 0.03), ([2371, 1324, 288, 92], 0.01), ([2371, 1324, 288, 92], 0.1),
+					([1679, 1270, 71], 0.00001), ([1508, 1330, 79, 15], 0.00001)]
 y_test_pred_list = []
 
 for hyperparams in hyperparams_list:
