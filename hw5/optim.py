@@ -67,8 +67,9 @@ def sgd_momentum(theta, dtheta, config=None):
   #############################################################################
   # 2 lines of code expected
 
+  v = config['momentum'] * v - config['learning_rate'] * dtheta
+  next_theta = theta + v
 
-  pass
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
@@ -104,8 +105,9 @@ def rmsprop(theta, dtheta, config=None):
   #############################################################################
   # 2 lines of code expected
 
+  config['cache'] = config['decay_rate'] * config['cache'] + (1.0 - config['decay_rate']) * (dtheta ** 2)
+  next_theta = theta - config['learning_rate'] * dtheta * (1.0 / (np.sqrt(config['cache']) + config['epsilon']))
 
-  pass
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
