@@ -1,34 +1,26 @@
 import numpy as np
 import utils
 from sklearn import model_selection, preprocessing
-from sklearn.metrics import confusion_matrix
 from sklearn.neural_network import MLPClassifier
 from scipy import stats
-import time
-import random
 
 
 # Initialize variables
-FINAL_RUN = True
-bins = False
-hog_repr = True
+FINAL_RUN = False
+hog_repr = False
 training_examples = 50000  # Max = 50000
-start = time.time()
 
-X_train = utils.get_X("data/train", training_examples, hog_repr=hog_repr, bins=bins)
+X_train = utils.get_X("data/train", training_examples, hog_repr=hog_repr)
 y_train = utils.get_y("data/trainLabels.csv")[range(training_examples)]
-print "TIME:", time.time() - start
-start = time.time()
 
 # Create training, validation, and test data sets
 print "Creating Train and Test Sets..."
 if FINAL_RUN:  # When running on Training Data and untouched Test Data!
-	X_test = utils.get_X("data/test", 300000, hog_repr=hog_repr, bins=bins)
+	X_test = utils.get_X("data/test", 300000, hog_repr=hog_repr)
 	y_test = None
 else:  # When running ONLY on Training Data!
 	X_train, X_test, y_train, y_test = model_selection.train_test_split(X_train, y_train, test_size=0.2, random_state=0)
-print "TIME:", time.time() - start
-start = time.time()
+
 
 if hog_repr:
 	print "Preprocessing Data..."
@@ -36,8 +28,7 @@ if hog_repr:
 	scaler = preprocessing.StandardScaler().fit(X_train)
 	X_train = poly.fit_transform(scaler.transform(X_train))
 	X_test = poly.fit_transform(scaler.transform(X_test))
-	print "TIME:", time.time() - start
-	start = time.time()
+
 
 # Train, Predict, and Store Results with Neural Network Model!
 print "Selecting Hyperparameters..."
@@ -73,9 +64,6 @@ for i in range(num_iters):
 		best_nn = nn
 		best_y_test_pred = y_test_pred
 
-	print "TIME:", time.time() - start
-	start = time.time()
-
 
 # Train Many Neural Networks to vote on outcome
 print "Training Voting System..."
@@ -107,8 +95,6 @@ y_test_pred_matrix = np.array(y_test_pred_list).T
 best_y_test_pred = stats.mode(y_test_pred_matrix, axis=1)[0][:, 0]
 best_accuracy = np.mean(y_test == best_y_test_pred)
 print hyperparams_list, best_accuracy
-print "TIME:", time.time() - start
-start = time.time()
 
 
 if FINAL_RUN:

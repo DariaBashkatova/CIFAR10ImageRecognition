@@ -2,24 +2,21 @@ import nn_utils
 import numpy as np
 import theano
 import utils
-from lasagne import layers
-from lasagne.init import HeNormal
-from lasagne.nonlinearities import softmax
-from lasagne.nonlinearities import rectify
-from lasagne.updates import nesterov_momentum
-from nolearn.lasagne import NeuralNet
 from nolearn.lasagne import visualize
 from scipy import stats
-from sklearn import model_selection, preprocessing
-import random
+from sklearn import model_selection
+from sklearn.preprocessing import StandardScaler
 import sys
-import time
 
 
 # Initialize variables
-sys.setrecursionlimit(50000)
-FINAL_RUN = False
+sys.setrecursionlimit(50000)  # Helps for pickling large amounts of data
 training_examples = 50000  # Max = 50000
+FINAL_RUN = True
+ensemble = None  # "voting", "softmax_average", and None also
+feature_extraction = True
+read_filename = "cnn25_1-?"
+write_filename = "cnn25_2-?"
 
 X_train = utils.load("X2d.pickle")
 y_train = utils.get_y("data/trainLabels.csv")[range(training_examples)]
@@ -27,6 +24,7 @@ if FINAL_RUN:
 	print "FINAL RUN!"
 else:
 	print "TEST RUN!"
+
 
 # Create training, validation, and test data sets
 print "Creating Train and Test Sets..."
@@ -41,9 +39,13 @@ else:  # When running ONLY on Training Data!
 
 # Preprocess data
 print "Preprocessing Data..."
-# TODO: Subtract per pixel mean!
-X_train /= 255.0
-X_test /= 255.0
+if read_filename[4] == "_" and int(read_filename[3]) <= 5:  # Separates out previous models
+	X_train /= 255.0  # Scaling to [0, 1] used before
+	X_test /= 255.0  # Scaling to [0, 1] used before
+else:
+	scaler = StandardScaler(with_std=False).fit(X_train.reshape((X_train.shape[0], 3 * 32 * 32)))  # Subtract per-pixel mean from data sets
+	X_train = scaler.transform(X_train.reshape((X_train.shape[0], 3 * 32 * 32))).reshape((X_train.shape[0], 3, 32, 32))
+	X_test = scaler.transform(X_test.reshape((X_test.shape[0], 3 * 32 * 32))).reshape((X_test.shape[0], 3, 32, 32))
 X_train = X_train.astype('float32')  # need this cast to use GPU
 X_test = X_test.astype('float32')  # need this case to use GPU
 y_train = y_train.astype(np.uint8)
@@ -52,77 +54,59 @@ if y_test is not None:
 
 # Train and Test Model
 print "Training CNN..."
-# nn = NeuralNet(
-# 	layers=[
-# 		('input', layers.InputLayer),
-# 		('conv1', layers.Conv2DLayer),
-# 		('bn1', layers.BatchNormLayer),
-# 		('conv2', layers.Conv2DLayer),
-# 		('bn2', layers.BatchNormLayer),
-# 		('conv3', layers.Conv2DLayer),
-# 		('bn3', layers.BatchNormLayer),
-# 		('conv4', layers.Conv2DLayer),
-# 		('bn4', layers.BatchNormLayer),
-# 		('conv5', layers.Conv2DLayer),
-# 		('bn5', layers.BatchNormLayer),
-# 		('conv6', layers.Conv2DLayer),
-# 		('bn6', layers.BatchNormLayer),
-# 		('conv7', layers.Conv2DLayer),
-# 		('bn7', layers.BatchNormLayer),
-# 		('globalpool', layers.GlobalPoolLayer),
-# 		('output', layers.DenseLayer),
-# 		],
-#
-# 	input_shape=(None, 3, 32, 32),
-# 	conv1_num_filters=16, conv1_filter_size=(3, 3), conv1_pad=1, conv1_W=HeNormal(),
-# 	conv2_num_filters=16, conv2_filter_size=(3, 3), conv2_pad=1, conv2_W=HeNormal(),
-# 	conv3_num_filters=16, conv3_filter_size=(3, 3), conv3_pad=1, conv3_W=HeNormal(),
-#
-# 	conv4_stride=2,
-# 	conv4_num_filters=32, conv4_filter_size=(3, 3), conv4_pad=1, conv4_W=HeNormal(),
-# 	conv5_num_filters=32, conv5_filter_size=(3, 3), conv5_pad=1, conv5_W=HeNormal(),
-#
-# 	conv6_stride=2,
-# 	conv6_num_filters=64, conv6_filter_size=(3, 3), conv6_pad=1, conv6_W=HeNormal(),
-# 	conv7_num_filters=64, conv7_filter_size=(3, 3), conv7_pad=1, conv7_W=HeNormal(),
-#
-# 	output_num_units=10, output_nonlinearity=softmax,
-#
-# 	batch_iterator_train=nn_utils.FlipBatchIterator(batch_size=128),
-# 	update_learning_rate=theano.shared(utils.float32(0.1)),
-# 	update_momentum=theano.shared(utils.float32(0.9)),
-# 	objective_l2=0.0001,
-# 	max_epochs=32000,
-# 	verbose=1,
-# 	)
+nn = nn_utils.resnet_cnn(2)
 
-read_filename = "cnn2_3-826"
-write_filename = "cnn2_4-?"
+if ensemble == "voting":  # Voting Scheme
+	y_test_pred_list = []
+	for nn_file in ["cnn1_1-828", "cnn2_3-826", "cnn3_4-832", "cnn4_1-821", "cnn5_1-819"]:
+		print nn_file
+		nn = utils.load(nn_file + ".pickle")
+		y_test_pred_list.append(nn.predict(X_test))
+	y_test_pred_matrix = np.array(y_test_pred_list).T
+	best_y_test_pred = stats.mode(y_test_pred_matrix, axis=1)[0][:, 0]
+	best_accuracy = np.mean(y_test == best_y_test_pred)
 
-print "Loading Model!"
-nn = utils.load(read_filename + ".pickle")
-visualize.plot_conv_weights(nn.layers_['conv1'])
+elif ensemble == "softmax_average" or ensemble == "softmax_log_average":  # Take the argmax of the softmax average among models
+	softmax_sum = np.zeros((X_test.shape[0], 10))
+	nn_files = ["cnn1_1-828", "cnn2_3-826", "cnn3_4-832", "cnn4_1-821", "cnn5_1-819"]
+	for nn_file in nn_files:
+		print nn_file
+		nn = utils.load(nn_file + ".pickle")
+		X_train_softmax = nn_utils.feature_extraction_from_nn(
+			nn, "output", X_train)  # filename="X_train_extracted_output" + nn_file + ".pickle"
+		X_test_softmax = nn_utils.feature_extraction_from_nn(
+			nn, "output", X_test)  # filename="X_test_extracted_output" + nn_file + ".pickle"
+		if ensemble == "softmax_log_average":
+			softmax_sum += np.log(X_test_softmax)  # Softmax log average works a little better
+		else:
+			softmax_sum += X_test_softmax  # Softmax log average works a little better
 
-# nn.fit(X_train, y_train)
+	print softmax_sum / (1.0 * len(nn_files))
+	best_y_test_pred = np.argmax(softmax_sum, axis=1)
 
-# print "Pickling Model..."
-# utils.dump(nn, write_filename + ".pickle")
+else:  # Using a single model only
+	print "Loading Model!"
+	nn = utils.load(read_filename + ".pickle")
 
-print "Predicting on Train and Test Sets!"
-best_y_test_pred = nn.predict(X_test)
-train_pred = nn.predict(X_train)
-train_accuracy = np.mean(train_pred == y_train)
-print "CNN Train Accuracy: ", train_accuracy
+	# nn.fit(X_train, y_train)
+	#
+	# print "Pickling Model..."
+	# utils.dump(nn, write_filename + ".pickle")
 
+	print "Predicting on Train and Test Sets!"
+	best_y_test_pred = nn.predict(X_test)
+	train_pred = nn.predict(X_train)
+	train_accuracy = np.mean(train_pred == y_train)
+	print "CNN Train Accuracy: ", train_accuracy
 
-feature_extraction = False
 if feature_extraction:
-	nn_utils.feature_extraction_from_nn(nn, "globalpool", X_train, "X_train_extracted3.pickle")
-	nn_utils.feature_extraction_from_nn(nn, "globalpool", X_test, "X_test_extracted3.pickle")
+	print "Extracting Features!"
+	nn_utils.feature_extraction_from_nn(nn, "globalpool", X_train, "X_train_extracted" + write_filename + ".pickle")
+	nn_utils.feature_extraction_from_nn(nn, "globalpool", X_test, "X_test_extracted" + write_filename + ".pickle")
 
 
-print "Printing Final Results to File..."
 if FINAL_RUN:
+	print "Printing Final Results to File..."
 	utils.y_to_csv(best_y_test_pred, "data/" + write_filename + "TestLabels.csv")
 
 
@@ -132,4 +116,6 @@ if y_test is not None:
 	print "CNN Test Accuracy: ", best_accuracy
 	utils.print_accuracy_report(y_test, best_y_test_pred)
 
+
+visualize.plot_conv_weights(nn.layers_['conv1'])  # Code from Christian Perone
 

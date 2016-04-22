@@ -7,8 +7,10 @@ from lasagne.init import HeNormal
 from lasagne.nonlinearities import softmax
 from nolearn.lasagne import NeuralNet
 from sklearn import model_selection
+from sklearn.decomposition import PCA
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neural_network import MLPClassifier
+from sklearn.preprocessing import StandardScaler
 from sklearn import svm
 from sklearn import tree
 from scipy import stats
@@ -16,23 +18,57 @@ import theano
 
 
 
+
 # Initialize variables
-FINAL_RUN = True
-model_type = "SVM"  # Supports NB, DT, SVM, NN
+FINAL_RUN = False
+model_type = "NN"  # Supports NB, DT, SVM, NN, PCA
 print model_type
 
-# X_train = utils.get_X("data/train", 50000, bins=bins)
-X_train = np.concatenate((utils.load("X_train_extracted1.pickle"), utils.load("X_train_extracted2.pickle")), axis=1)
+X_train = np.concatenate((utils.load("X_train_extracted1.pickle"),
+                          utils.load("X_train_extracted2.pickle"),
+                          utils.load("X_train_extracted3_1.pickle"),
+                          utils.load("X_train_extracted4.pickle"),
+                          utils.load("X_train_extracted5.pickle"),
+                          utils.load("X_train_extractedcnn21_2-843.pickle"),
+                          utils.load("X_train_extractedcnn22_1-845.pickle"),
+                          utils.load("X_train_extractedcnn23_1-840.pickle"),
+                          utils.load("X_train_extractedcnn24_1-846.pickle"),
+                          utils.load("X_train_extractedcnn25_1-837.pickle")), axis=1)
+# X_train = np.concatenate((utils.load("X_train_extracted_outputcnn1_1-828.pickle"),
+#                           utils.load("X_train_extracted_outputcnn2_3-826.pickle"),
+#                           utils.load("X_train_extracted_outputcnn3_4-832.pickle"),
+#                           utils.load("X_train_extracted_outputcnn4_1-821.pickle"),
+#                           utils.load("X_train_extracted_outputcnn5_1-819.pickle")), axis=1)
 y_train = utils.get_y("data/trainLabels.csv")
 
 # Create training, validation, and test data sets
 print "Creating Train and Test Sets..."
 if FINAL_RUN:  # When running on Training Data and untouched Test Data!
 	# X_test = utils.get_X("data/test", 300000)
-	X_test = np.concatenate((utils.load("X_test_extracted1.pickle"), utils.load("X_test_extracted2.pickle")), axis=1)
+	X_test = np.concatenate((utils.load("X_test_extracted1.pickle"),
+	                         utils.load("X_test_extracted2.pickle"),
+	                         utils.load("X_test_extracted3_1.pickle"),
+	                         utils.load("X_test_extracted4.pickle"),
+	                         utils.load("X_test_extracted5.pickle"),
+                             utils.load("X_test_extractedcnn21_2-843.pickle"),
+                             utils.load("X_test_extractedcnn22_1-845.pickle"),
+                             utils.load("X_test_extractedcnn23_1-840.pickle"),
+                             utils.load("X_test_extractedcnn24_1-846.pickle"),
+                             utils.load("X_test_extractedcnn25_1-837.pickle")), axis=1)
+	# X_test = np.concatenate((utils.load("X_test_extracted_outputcnn1_1-828.pickle"),
+	#                          utils.load("X_test_extracted_outputcnn2_3-826.pickle"),
+     #                         utils.load("X_test_extracted_outputcnn3_4-832.pickle"),
+     #                         utils.load("X_test_extracted_outputcnn4_1-821.pickle"),
+     #                         utils.load("X_test_extracted_outputcnn5_1-819.pickle")), axis=1)
 	y_test = None
 else:  # When running ONLY on Training Data!
 	X_train, X_test, y_train, y_test = model_selection.train_test_split(X_train, y_train, test_size=0.2)
+
+
+print "Preprocessing Data..."
+scaler = StandardScaler().fit(X_train)
+X_train = scaler.transform(X_train)
+X_test = scaler.transform(X_test)
 
 
 # Train, Predict, and Store Results with Model!
@@ -54,8 +90,17 @@ elif model_type == "DT":
 	best_y_test_pred = stats.mode(y_test_pred_matrix, axis=1)[0][:, 0]
 
 elif model_type == "SVM":
-	svm_model = svm.SVC()
+	svm_model = svm.LinearSVC(C=0.033)
 	best_y_test_pred = svm_model.fit(X_train, y_train).predict(X_test)
+	print "TRAIN ACCURACY:", np.mean(y_train == svm_model.predict(X_train))
+
+elif model_type == "PCA":
+	pca = PCA().fit(X_train)
+	X_train = pca.transform(X_train)
+	X_test = pca.transform(X_test)
+	print pca.explained_variance_ratio_
+	print X_train.shape
+	print X_test.shape
 
 elif model_type == "NN":
 	X_train = X_train.astype('float32')  # need this cast to use GPU
@@ -66,14 +111,14 @@ elif model_type == "NN":
 	best_nn = None
 	best_accuracy = -1.0
 	best_y_test_pred = None
-	num_iters = 1
+	num_iters = 25
 
 	for i in range(num_iters):
 		# Train Model
-		num_hidden_layers = 8  # Originally (i % 4) + 1
-		# hidden_layer_sizes = utils.rand_hidden_layer_sizes(X_train.shape[1], 10, num_hidden_layers)
+		num_hidden_layers = 5  # Originally (i % 4) + 1
+		hidden_layer_sizes = utils.rand_hidden_layer_sizes(X_train.shape[1], 10, num_hidden_layers)
 		# alpha = random.choice([1e-5, 1e-4, 1e-3, 1e-2, 1e-1])
-		hidden_layer_sizes = [58, 57, 50, 50, 48]
+		hidden_layer_sizes = [463, 461, 366, 86, 34]
 		print hidden_layer_sizes
 
 		# nn = MLPClassifier(
@@ -98,7 +143,7 @@ elif model_type == "NN":
 				('output', layers.DenseLayer),
 			],
 
-			input_shape=(None, 64),
+			input_shape=(None, 640),
 			hidden1_num_units=hidden_layer_sizes[0], hidden1_W=HeNormal(),
 			hidden2_num_units=hidden_layer_sizes[1], hidden2_W=HeNormal(),
 			hidden3_num_units=hidden_layer_sizes[2], hidden3_W=HeNormal(),
@@ -106,10 +151,10 @@ elif model_type == "NN":
 			hidden5_num_units=hidden_layer_sizes[4], hidden5_W=HeNormal(),
 			output_num_units=10, output_nonlinearity=softmax,
 
-			on_epoch_finished=[nn_utils.EarlyStopping(patience=5)],
-			update_learning_rate=theano.shared(utils.float32(0.1)),
+			on_epoch_finished=[nn_utils.EarlyStopping(patience=20)],
+			update_learning_rate=theano.shared(utils.float32(0.0066)),
 			update_momentum=theano.shared(utils.float32(0.9)),
-			objective_l2=0.0003,
+			objective_l2=0.01,
 			max_epochs=1000,
 			verbose=1,
 		)
@@ -117,19 +162,19 @@ elif model_type == "NN":
 		nn.fit(X_train, y_train)
 
 		# Feature extract using the nn, then train over with SVM
-		print "Extracting Features using NN!"
-		Xtracted_train = nn_utils.feature_extraction_from_nn(nn, 'hidden5', X_train)
-		Xtracted_test = nn_utils.feature_extraction_from_nn(nn, 'hidden5', X_test)
-
-		print "Training SVM!"
-		svm_model = svm.SVC()
-		svm_model.fit(X_train, y_train)
+		# print "Extracting Features using NN!"
+		# Xtracted_train = nn_utils.feature_extraction_from_nn(nn, 'hidden5', X_train)
+		# Xtracted_test = nn_utils.feature_extraction_from_nn(nn, 'hidden5', X_test)
+		#
+		# print "Training SVM!"
+		# svm_model = svm.SVC()
+		# svm_model.fit(X_train, y_train)
 
 		# Validate Model
-		y_test_pred = svm_model.predict(X_test)
-		y_train_pred = svm_model.predict(X_train)
-		# y_test_pred = nn.predict(X_test)
-		# y_train_pred = nn.predict(X_train)
+		# y_test_pred = svm_model.predict(X_test)
+		# y_train_pred = svm_model.predict(X_train)
+		y_test_pred = nn.predict(X_test)
+		y_train_pred = nn.predict(X_train)
 
 		train_accuracy = np.mean(y_train == y_train_pred)
 		print hidden_layer_sizes
@@ -154,7 +199,7 @@ elif model_type == "NN":
 
 # Store final results if necessary
 if FINAL_RUN:
-	utils.y_to_csv(best_y_test_pred, "data/CNN-NN-SVMtestLabels.csv")
+	utils.y_to_csv(best_y_test_pred, "data/10CNN-LinearSVMtestLabels.csv")
 
 
 # Evaluate the best softmax classifier on test set (if results are known)

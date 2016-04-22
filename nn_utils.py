@@ -1,4 +1,7 @@
 from lasagne import layers
+from lasagne.init import HeNormal
+from lasagne.nonlinearities import softmax
+from nolearn.lasagne import NeuralNet
 from nolearn.lasagne import BatchIterator
 import numpy as np
 import utils
@@ -117,26 +120,219 @@ def print_resnet_cnn(n):
 			  "_filter_size=(3, 3), conv" + str(2 * i + 1) + "_pad=1, conv" + str(2 * i + 1) + "_W=HeNormal(),"
 
 	print "\n    output_num_units=10, output_nonlinearity=softmax,\n\n" + \
-		  "    # Hyperparameters\n" + \
-		  "    batch_iterator_train=nn_utils.FlipBatchIterator(batch_size=128),\n" +\
+		  "    batch_iterator_train=FlipBatchIterator(batch_size=128),\n" +\
 		  "    update_learning_rate=theano.shared(utils.float32(0.1)),\n" +\
 		  "    update_momentum=theano.shared(utils.float32(0.9)),\n" +\
-		  "    on_epoch_finished=[\n" +\
-		  "        # nn_utils.AdjustVariable('update_learning_rate', start=0.1, stop=0.1),\n" +\
-		  "        # nn_utils.AdjustVariable('update_momentum', start=0.9, stop=0.9),\n" +\
-		  "        nn_utils.EarlyStopping(patience=30),\n" +\
-		  "    ],\n" +\
 		  "    objective_l2=0.0001,\n" +\
-		  "    max_epochs=10000,\n" +\
+		  "    max_epochs=32000,\n" +\
 		  "    verbose=1,\n" +\
 		  "    )\n"
 
 	return
 
+
+def resnet_cnn(layer_size_param):
+	"""
+	Code generated using print_resnet_cnn to return a resnet cnn of size 6*layer_size_param+2
+	"""
+	if layer_size_param == 1:
+		return NeuralNet(
+			layers=[
+				('input', layers.InputLayer),
+				('conv1', layers.Conv2DLayer),
+				('bn1', layers.BatchNormLayer),
+				('conv2', layers.Conv2DLayer),
+				('bn2', layers.BatchNormLayer),
+				('conv3', layers.Conv2DLayer),
+				('bn3', layers.BatchNormLayer),
+				('conv4', layers.Conv2DLayer),
+				('bn4', layers.BatchNormLayer),
+				('conv5', layers.Conv2DLayer),
+				('bn5', layers.BatchNormLayer),
+				('conv6', layers.Conv2DLayer),
+				('bn6', layers.BatchNormLayer),
+				('conv7', layers.Conv2DLayer),
+				('bn7', layers.BatchNormLayer),
+				('globalpool', layers.GlobalPoolLayer),
+				('output', layers.DenseLayer),
+				],
+
+			input_shape=(None, 3, 32, 32),
+			conv1_num_filters=16, conv1_filter_size=(3, 3), conv1_pad=1, conv1_W=HeNormal(),
+			conv2_num_filters=16, conv2_filter_size=(3, 3), conv2_pad=1, conv2_W=HeNormal(),
+			conv3_num_filters=16, conv3_filter_size=(3, 3), conv3_pad=1, conv3_W=HeNormal(),
+
+			conv4_stride=2,
+			conv4_num_filters=32, conv4_filter_size=(3, 3), conv4_pad=1, conv4_W=HeNormal(),
+			conv5_num_filters=32, conv5_filter_size=(3, 3), conv5_pad=1, conv5_W=HeNormal(),
+
+			conv6_stride=2,
+			conv6_num_filters=64, conv6_filter_size=(3, 3), conv6_pad=1, conv6_W=HeNormal(),
+			conv7_num_filters=64, conv7_filter_size=(3, 3), conv7_pad=1, conv7_W=HeNormal(),
+
+			output_num_units=10, output_nonlinearity=softmax,
+
+			batch_iterator_train=FlipBatchIterator(batch_size=128),
+			update_learning_rate=theano.shared(utils.float32(0.1)),
+			update_momentum=theano.shared(utils.float32(0.9)),
+			objective_l2=0.0001,
+			max_epochs=32000,
+			verbose=1,
+			)
+	elif layer_size_param == 2:
+		return NeuralNet(
+			layers=[
+				('input', layers.InputLayer),
+				('conv1', layers.Conv2DLayer),
+				('bn1', layers.BatchNormLayer),
+				('conv2', layers.Conv2DLayer),
+				('bn2', layers.BatchNormLayer),
+				('conv3', layers.Conv2DLayer),
+				('bn3', layers.BatchNormLayer),
+				('conv4', layers.Conv2DLayer),
+				('bn4', layers.BatchNormLayer),
+				('conv5', layers.Conv2DLayer),
+				('bn5', layers.BatchNormLayer),
+				('conv6', layers.Conv2DLayer),
+				('bn6', layers.BatchNormLayer),
+				('conv7', layers.Conv2DLayer),
+				('bn7', layers.BatchNormLayer),
+				('conv8', layers.Conv2DLayer),
+				('bn8', layers.BatchNormLayer),
+				('conv9', layers.Conv2DLayer),
+				('bn9', layers.BatchNormLayer),
+				('conv10', layers.Conv2DLayer),
+				('bn10', layers.BatchNormLayer),
+				('conv11', layers.Conv2DLayer),
+				('bn11', layers.BatchNormLayer),
+				('conv12', layers.Conv2DLayer),
+				('bn12', layers.BatchNormLayer),
+				('conv13', layers.Conv2DLayer),
+				('bn13', layers.BatchNormLayer),
+				('globalpool', layers.GlobalPoolLayer),
+				('output', layers.DenseLayer),
+			],
+
+			input_shape=(None, 3, 32, 32),
+			conv1_num_filters=16, conv1_filter_size=(3, 3), conv1_pad=1, conv1_W=HeNormal(),
+			conv2_num_filters=16, conv2_filter_size=(3, 3), conv2_pad=1, conv2_W=HeNormal(),
+			conv3_num_filters=16, conv3_filter_size=(3, 3), conv3_pad=1, conv3_W=HeNormal(),
+			conv4_num_filters=16, conv4_filter_size=(3, 3), conv4_pad=1, conv4_W=HeNormal(),
+			conv5_num_filters=16, conv5_filter_size=(3, 3), conv5_pad=1, conv5_W=HeNormal(),
+
+			conv6_stride=2,
+			conv6_num_filters=32, conv6_filter_size=(3, 3), conv6_pad=1, conv6_W=HeNormal(),
+			conv7_num_filters=32, conv7_filter_size=(3, 3), conv7_pad=1, conv7_W=HeNormal(),
+			conv8_num_filters=32, conv8_filter_size=(3, 3), conv8_pad=1, conv8_W=HeNormal(),
+			conv9_num_filters=32, conv9_filter_size=(3, 3), conv9_pad=1, conv9_W=HeNormal(),
+
+			conv10_stride=2,
+			conv10_num_filters=64, conv10_filter_size=(3, 3), conv10_pad=1, conv10_W=HeNormal(),
+			conv11_num_filters=64, conv11_filter_size=(3, 3), conv11_pad=1, conv11_W=HeNormal(),
+			conv12_num_filters=64, conv12_filter_size=(3, 3), conv12_pad=1, conv12_W=HeNormal(),
+			conv13_num_filters=64, conv13_filter_size=(3, 3), conv13_pad=1, conv13_W=HeNormal(),
+
+			output_num_units=10, output_nonlinearity=softmax,
+
+			batch_iterator_train=FlipBatchIterator(batch_size=128),
+			update_learning_rate=theano.shared(utils.float32(0.1)),
+			update_momentum=theano.shared(utils.float32(0.9)),
+			objective_l2=0.0001,
+			max_epochs=32000,
+			verbose=1,
+		)
+	elif layer_size_param == 3:
+		return NeuralNet(
+			layers=[
+				('input', layers.InputLayer),
+				('conv1', layers.Conv2DLayer),
+				('bn1', layers.BatchNormLayer),
+				('conv2', layers.Conv2DLayer),
+				('bn2', layers.BatchNormLayer),
+				('conv3', layers.Conv2DLayer),
+				('bn3', layers.BatchNormLayer),
+				('conv4', layers.Conv2DLayer),
+				('bn4', layers.BatchNormLayer),
+				('conv5', layers.Conv2DLayer),
+				('bn5', layers.BatchNormLayer),
+				('conv6', layers.Conv2DLayer),
+				('bn6', layers.BatchNormLayer),
+				('conv7', layers.Conv2DLayer),
+				('bn7', layers.BatchNormLayer),
+				('conv8', layers.Conv2DLayer),
+				('bn8', layers.BatchNormLayer),
+				('conv9', layers.Conv2DLayer),
+				('bn9', layers.BatchNormLayer),
+				('conv10', layers.Conv2DLayer),
+				('bn10', layers.BatchNormLayer),
+				('conv11', layers.Conv2DLayer),
+				('bn11', layers.BatchNormLayer),
+				('conv12', layers.Conv2DLayer),
+				('bn12', layers.BatchNormLayer),
+				('conv13', layers.Conv2DLayer),
+				('bn13', layers.BatchNormLayer),
+				('conv14', layers.Conv2DLayer),
+				('bn14', layers.BatchNormLayer),
+				('conv15', layers.Conv2DLayer),
+				('bn15', layers.BatchNormLayer),
+				('conv16', layers.Conv2DLayer),
+				('bn16', layers.BatchNormLayer),
+				('conv17', layers.Conv2DLayer),
+				('bn17', layers.BatchNormLayer),
+				('conv18', layers.Conv2DLayer),
+				('bn18', layers.BatchNormLayer),
+				('conv19', layers.Conv2DLayer),
+				('bn19', layers.BatchNormLayer),
+				('globalpool', layers.GlobalPoolLayer),
+				('output', layers.DenseLayer),
+			],
+
+			input_shape=(None, 3, 32, 32),
+			conv1_num_filters=16, conv1_filter_size=(3, 3), conv1_pad=1, conv1_W=HeNormal(),
+			conv2_num_filters=16, conv2_filter_size=(3, 3), conv2_pad=1, conv2_W=HeNormal(),
+			conv3_num_filters=16, conv3_filter_size=(3, 3), conv3_pad=1, conv3_W=HeNormal(),
+			conv4_num_filters=16, conv4_filter_size=(3, 3), conv4_pad=1, conv4_W=HeNormal(),
+			conv5_num_filters=16, conv5_filter_size=(3, 3), conv5_pad=1, conv5_W=HeNormal(),
+			conv6_num_filters=16, conv6_filter_size=(3, 3), conv6_pad=1, conv6_W=HeNormal(),
+			conv7_num_filters=16, conv7_filter_size=(3, 3), conv7_pad=1, conv7_W=HeNormal(),
+
+			conv8_stride=2,
+			conv8_num_filters=32, conv8_filter_size=(3, 3), conv8_pad=1, conv8_W=HeNormal(),
+			conv9_num_filters=32, conv9_filter_size=(3, 3), conv9_pad=1, conv9_W=HeNormal(),
+			conv10_num_filters=32, conv10_filter_size=(3, 3), conv10_pad=1, conv10_W=HeNormal(),
+			conv11_num_filters=32, conv11_filter_size=(3, 3), conv11_pad=1, conv11_W=HeNormal(),
+			conv12_num_filters=32, conv12_filter_size=(3, 3), conv12_pad=1, conv12_W=HeNormal(),
+			conv13_num_filters=32, conv13_filter_size=(3, 3), conv13_pad=1, conv13_W=HeNormal(),
+
+			conv14_stride=2,
+			conv14_num_filters=64, conv14_filter_size=(3, 3), conv14_pad=1, conv14_W=HeNormal(),
+			conv15_num_filters=64, conv15_filter_size=(3, 3), conv15_pad=1, conv15_W=HeNormal(),
+			conv16_num_filters=64, conv16_filter_size=(3, 3), conv16_pad=1, conv16_W=HeNormal(),
+			conv17_num_filters=64, conv17_filter_size=(3, 3), conv17_pad=1, conv17_W=HeNormal(),
+			conv18_num_filters=64, conv18_filter_size=(3, 3), conv18_pad=1, conv18_W=HeNormal(),
+			conv19_num_filters=64, conv19_filter_size=(3, 3), conv19_pad=1, conv19_W=HeNormal(),
+
+			output_num_units=10, output_nonlinearity=softmax,
+
+			batch_iterator_train=FlipBatchIterator(batch_size=128),
+			update_learning_rate=theano.shared(utils.float32(0.1)),
+			update_momentum=theano.shared(utils.float32(0.9)),
+			objective_l2=0.0001,
+			max_epochs=32000,
+			verbose=1,
+		)
+	else:
+		print "Please print initialization code for a resnet of layer size param",\
+			layer_size_param, "and add it to resnet_cnn()"
+
+
 def feature_extraction_from_nn(nn, hidden_layer_name, X, filename=None):
 	"""
 	Return and, if specified, pickle the hidden layer output of a neural network
-	over all the training data, as a method of feature extraction
+		over all the training data, as a method of feature extraction
+
+	Feature Extraction code/hidden layer output code credit to Christian Perone
+		and his tutorial (http://blog.christianperone.com/2015/08/convolutional-neural-networks-and-feature-extraction-with-python/)
 	"""
 	# Set up hidden layer outputting
 	input_var = nn.layers_['input'].input_var
