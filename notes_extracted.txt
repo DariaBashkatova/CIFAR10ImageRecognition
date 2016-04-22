@@ -1,3 +1,5 @@
+When run on extracted features from 1 CNN on Test Set:
+
 NB Test Set Accuracy:  0.8126
 [[763  13  28   8  10   1   4   9 134  29]
  [  9 885   0   3   1   3  12   2  21  40]
