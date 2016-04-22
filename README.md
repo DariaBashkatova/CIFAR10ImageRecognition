@@ -10,7 +10,7 @@ Final Model Strategy:
 - Use the stored, tranformed data, given by each of the multiple CNN's, to train a highly accurate SVM and
     print the results to a csv file stored in the data folder
     - the command "python run_extracted.py" will do the above
-- We used 7 models of validation accuracies ranging from 82%-84.5% and received a test accuracy of 90.5%
+- We used 10 models of validation accuracies ranging from 81.9%-84.6% and received a test accuracy of 91.15%
 
 Libraries Necessary to Run This Code:
 - Python 2.7
@@ -27,8 +27,12 @@ Libraries Necessary to Run This Code:
 
 How to Run This Code to produce final test labels:
 - Download Code
-- Download CIFAR-10 train and test data into a folder named "data"
 - Download Pickled Model (If you are wanting to run code using pickled model/save training time)
+    and put them into the "TermProject" folder
+    - no need to put in data into a folder in here, since the pickled files are features extracted from the data
+        using CNN's we've trained - if you want to recreate the CNN's and then feature extract using them,
+        then you'll need to download the CIFAR-10 data and put it into a "data" folder  in the "TermProject" folder,
+        and then call "python run_cnn.py"
 - Run the command "python run_extracted.cnn"
 - Labels will be stored in a csv file in the "data" folder
 
@@ -45,10 +49,15 @@ Methods Attempted:
     - Voting System of 5 NN's with HOG Representation (59%)
 - Convolutional Neural Network (run_cnn.py)
     - Single CNN (83.0%)
+    - 5 CNN's Emsembled via 1 Decision Trees (67.9%)
+    - 5 CNN's Emsembled via 100 Decision Trees (68.8%)
+    - 5 CNN's Ensembled via Gaussian Naive Bayes (80.7%)
     - 5 CNN's Voting (86.9%)
     - 5 CNN's Average Softmax Probability Output (87.9%)
     - 5 CNN's Average Log Softmax Probability Output (88.2%)
-    - 5 CNN's Emsembled via SVM (run_extracted.py) (89.6%)
+    - 5 CNN's Emsembled via Kernelized SVM (run_extracted.py) (89.6%)
+    - 10 CNN's Ensembled via Linear SVM (90.02%)
+    - 10 CNN's Ensembled via Kernelized SVM (91.15%)
 
 Credit Due To:
 - Daniel Nouri and his impressive Nolearn Wrapper around Lasagne, as well as fantastic tutorial walkthrough,
