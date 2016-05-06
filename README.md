@@ -46,7 +46,7 @@ Methods Attempted:
     - Voting System of 5 NN's (55%)
     - Voting System of 5 NN's with HOG Representation (59%)
 - Convolutional Neural Network (run_cnn.py)
-    - CNN (83.0%)
+    - Single CNN (83.0%) (Later achieved up to 85% Single Model accuracy)
     - Features Extracted from 1 CNN used in 1 Decision Tree (67.9%)
     - Features Extracted from 1 CNN used in 100 Decision Trees (68.8%)
     - Features Extracted from 1 CNN used in Gaussian Naive Bayes (80.7%)
