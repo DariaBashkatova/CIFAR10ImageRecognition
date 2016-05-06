@@ -1,4 +1,4 @@
-# TermProject
+# CIFAR 10 Image Recognition
 Tackling the CIFAR-10 Dataset Object Recognition Problem
 
 Final Model Strategy:
@@ -23,17 +23,15 @@ Libraries Necessary to Run This Code:
 - CUDA compatible GPU and CUDA setup (if running GPU to train Nolearn/Lasagne/Theano models for ~25x speedup)
 - Scipy 0.17.0
 - Matplotlib 1.5.1
-- Pandas 0.18.0
 
 How to Run This Code to produce final test labels:
 - Download Code
-- Download Pickled Model (If you are wanting to run code using pickled model/save training time)
-    and put them into the "TermProject" folder
-    - no need to put in data into a folder in here, since the pickled files are features extracted from the data
-        using CNN's we've trained - if you want to recreate the CNN's and then feature extract using them,
-        then you'll need to download the CIFAR-10 data and put it into a "data" folder  in the "TermProject" folder,
-        and then call "python run_cnn.py"
+- Download CIFAR-10 data and put both image folders and the training label csv file downloaded into a folder named "data"
+- Run the command "python run_cnn.py" to create a CNN and feature extract using it
+	- Do this multiple times to get multiple CNN's/features extracted from data for ensembling
+	- Be sure to change the global variables at the top of run_cnn.py to create CNN's from multiple runs with different names and features extracted from different runs with different names
 - Run the command "python run_extracted.cnn"
+	- Here, be sure to put in the names of the files you generated from run_cnn.py into run_extracted.py where they are called
 - Labels will be stored in a csv file in the "data" folder
 
 Methods Attempted:
@@ -48,10 +46,10 @@ Methods Attempted:
     - Voting System of 5 NN's (55%)
     - Voting System of 5 NN's with HOG Representation (59%)
 - Convolutional Neural Network (run_cnn.py)
-    - Single CNN (83.0%)
-    - 5 CNN's Emsembled via 1 Decision Trees (67.9%)
-    - 5 CNN's Emsembled via 100 Decision Trees (68.8%)
-    - 5 CNN's Ensembled via Gaussian Naive Bayes (80.7%)
+    - CNN (83.0%)
+    - Features Extracted from 1 CNN used in 1 Decision Tree (67.9%)
+    - Features Extracted from 1 CNN used in 100 Decision Trees (68.8%)
+    - Features Extracted from 1 CNN used in Gaussian Naive Bayes (80.7%)
     - 5 CNN's Voting (86.9%)
     - 5 CNN's Average Softmax Probability Output (87.9%)
     - 5 CNN's Average Log Softmax Probability Output (88.2%)
